@@ -1,6 +1,7 @@
 #include "helper_functions.h"
 
 #include <libutils/rasserts.h>
+#include <iostream>
 
 
 cv::Mat makeAllBlackPixelsBlue(cv::Mat image) {
@@ -85,16 +86,11 @@ cv::Mat addBackgroundInsteadOfBlackPixels(cv::Mat object, cv::Mat background) {
     return object;
 }
 
-cv::Mat addBackgroundInsteadOfBlackPixelsLargeBackground(cv::Mat object, cv::Mat largeBackground, int delta_rows, int delta_cols) {
-    // теперь вам гарантируется что largeBackground гораздо больше - добавьте проверок этого инварианта (rassert-ов)
-    rassert(object.cols <= largeBackground.cols, 341241251251351);
-    rassert(object.rows <= largeBackground.rows, 341241251251351);
-    // TODO реализуйте функцию так, чтобы нарисовался объект ровно по центру на данном фоне, при этом черные пиксели объекта не должны быть нарисованы
+cv::Mat addBackgroundInsteadOfBlackPixelsLargeBackground(cv::Mat object, cv::Mat largeBackground, int J, int I) {
 
-    if (delta_rows == -1 && delta_cols ==-1){
-        delta_rows = (largeBackground.rows-object.rows)/2;
-        delta_cols = (largeBackground.cols-object.cols)/2;
-    }
+    int delta_rows = J - object.rows/2;
+    int delta_cols = I - object.cols/2;
+
     for(int i = delta_cols; i < object.cols + delta_cols; i++){
         for(int j = delta_rows; j < object.rows + delta_rows; j++){
             cv::Vec3b color_object = object.at<cv::Vec3b>(j - delta_rows, i - delta_cols);
@@ -108,14 +104,78 @@ cv::Mat addBackgroundInsteadOfBlackPixelsLargeBackground(cv::Mat object, cv::Mat
 }
 
 cv::Mat addBackgroundInsteadOfBlackPixelsLargeBackground_N_times(cv::Mat object, cv::Mat largeBackground, int N){
-    rassert(object.cols <= largeBackground.cols, 341241251251351);
-    rassert(object.rows <= largeBackground.rows, 341241251251351);
-
-    int delta_rows = (largeBackground.rows-object.rows)/2;
-    int delta_cols = (largeBackground.cols-object.cols)/2;
 
     for(int i = 0; i < N; i++){
+        int X = rand() % (largeBackground.cols - object.cols) + object.cols/2;
+        int Y = rand() % (largeBackground.rows - object.rows) + object.rows/2;
+        largeBackground = addBackgroundInsteadOfBlackPixelsLargeBackground(object, largeBackground, Y, X);
+    }
 
+    return largeBackground;
+}
+
+cv::Mat f6(cv::Mat object,cv::Mat largeBackground){
+    double J_scale = (double)largeBackground.rows/(double)object.rows;
+    double I_scale = (double)largeBackground.cols/(double)object.cols;
+
+    for(int i = 0; i < largeBackground.cols; i++){
+        for(int j = 0; j < largeBackground.rows; j++){
+            cv::Vec3b color_object = object.at<cv::Vec3b>((double)j/J_scale, (double)i/I_scale);
+            if(color_object[0] != 0 && color_object[1] != 0 && color_object[2] != 0){
+                largeBackground.at<cv::Vec3b>(j, i) = object.at<cv::Vec3b>((double)j/J_scale, (double)i/I_scale);
+            }
+        }
     }
     return largeBackground;
+}
+
+cv::Mat f20(cv::Mat object){
+    for( int i = 0; i < object.cols; i++){
+        for( int j = 0; j < object.rows; j++){
+            cv::Vec3b color_object = object.at<cv::Vec3b>(j, i);
+
+
+            if(color_object[0] == 0 && color_object[1] == 0 && color_object[2] == 0){
+                object.at<cv::Vec3b>(j, i) = cv::Vec3b(rand()%255, rand()%255, rand()%255);
+            }
+
+
+        }
+    }
+
+
+
+
+    return object;
+}
+
+cv::Mat f_4_0(cv::Mat object, cv::Mat background){
+    double J_scale = (double)background.rows/(double)object.rows;
+    double I_scale = (double)background.cols/(double)object.cols;
+    for(int i = 0; i < background. cols; i++){
+        for(int j = 0; j < background.rows; i++){
+            background.at<cv::Vec3b>(j, i) = object.at<cv::Vec3b>((double)j/J_scale, (double)i/I_scale);
+        }
+    }
+    return background;
+}
+
+cv::Mat f_4_1(cv::Mat object, cv::Mat background, cv::Vec3b color) {
+
+    for( int i = 0; i < object.cols; i++){
+        for( int j = 0; j < object.rows; j++){
+            cv::Vec3b color_object = object.at<cv::Vec3b>(j, i);
+            cv::Vec3b color_background = background.at<cv::Vec3b>(j, i);
+
+            if((int)color_object[0] == (int)color[0] && (int)color_object[1] == (int)color[1] && (int)color_object[2] == (int)color[2]){
+                std::cout << "serega 1";
+                object.at<cv::Vec3b>(j, i) = cv::Vec3b((int)color_background[0],(int)color_background[1],(int)color_background[2]);
+
+            }
+
+
+        }
+    }
+
+    return object;
 }
