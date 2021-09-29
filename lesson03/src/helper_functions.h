@@ -16,5 +16,4 @@ cv::Mat f6(cv::Mat object, cv::Mat largeBackground);
 
 cv::Mat f20(cv::Mat object);
 
-cv::Mat f_4_0(cv::Mat object, cv::Mat background);
-cv::Mat f_4_1(cv::Mat object, cv::Mat background, cv::Vec3b color);
+cv::Mat reshape(cv::Mat object, int new_rows, int new_cols);

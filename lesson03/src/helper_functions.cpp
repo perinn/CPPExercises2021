@@ -149,33 +149,14 @@ cv::Mat f20(cv::Mat object){
     return object;
 }
 
-cv::Mat f_4_0(cv::Mat object, cv::Mat background){
-    double J_scale = (double)background.rows/(double)object.rows;
-    double I_scale = (double)background.cols/(double)object.cols;
-    for(int i = 0; i < background. cols; i++){
-        for(int j = 0; j < background.rows; i++){
-            background.at<cv::Vec3b>(j, i) = object.at<cv::Vec3b>((double)j/J_scale, (double)i/I_scale);
+cv::Mat reshape(cv::Mat object, int new_rows, int new_cols){
+    cv::Mat new_object = cv::Mat (new_rows, new_cols, CV_8UC3, cv::Scalar(0,0,0));
+    double rows_scale = (double)new_object.rows/(double)object.rows;
+    double cols_scale = (double)new_object.cols/(double)object.cols;
+    for(int i = 0; i < new_object.cols; i++){
+        for(int j = 0; j < new_object.rows; j++){
+            new_object.at<cv::Vec3b>(j,i) = object.at<cv::Vec3b>((double)j/rows_scale, (double)i/cols_scale);
         }
     }
-    return background;
-}
-
-cv::Mat f_4_1(cv::Mat object, cv::Mat background, cv::Vec3b color) {
-
-    for( int i = 0; i < object.cols; i++){
-        for( int j = 0; j < object.rows; j++){
-            cv::Vec3b color_object = object.at<cv::Vec3b>(j, i);
-            cv::Vec3b color_background = background.at<cv::Vec3b>(j, i);
-
-            if((int)color_object[0] == (int)color[0] && (int)color_object[1] == (int)color[1] && (int)color_object[2] == (int)color[2]){
-                std::cout << "serega 1";
-                object.at<cv::Vec3b>(j, i) = cv::Vec3b((int)color_background[0],(int)color_background[1],(int)color_background[2]);
-
-            }
-
-
-        }
-    }
-
-    return object;
+    return new_object;
 }

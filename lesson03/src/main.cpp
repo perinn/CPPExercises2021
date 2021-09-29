@@ -85,7 +85,8 @@ struct MyVideoContent {
     int lastClickX;
     int lastClickY;
 };
-std::vector<int> coords;
+
+std::vector<std::vector<int>> coords;
 std::vector<cv::Vec3b> colors;
 bool nigga = false;
 
@@ -99,12 +100,14 @@ void onMouseClick(int event, int x, int y, int flags, void *pointerToMyVideoCont
     // вы можете добавить своих переменных в структурку выше (считайте что это описание объекта из ООП, т.к. почти полноценный класс)
 
     if (event == cv::EVENT_LBUTTONDOWN) { // если нажата левая кнопка мыши
-//        std::cout << "Left click at x=" << x << ", y=" << y << std::endl;
-        coords.push_back(y);
-        coords.push_back(x);
+        std::cout << "Left click at x=" << x << ", y=" << y << std::endl;
+        std::vector<int> tmp;
+        tmp.push_back(y);
+        tmp.push_back(x);
+        coords.push_back(tmp);
 
         colors.push_back(res.at<cv::Vec3b>(y,x));
-
+        std::cout << res.at<cv::Vec3b>(y,x) << std::endl;
     }
     if(event == cv::EVENT_RBUTTONDOWN){
         nigga = !nigga;
@@ -137,14 +140,16 @@ void task3() {
         rassert(!content.frame.empty(), 3452314124643); // проверяем что кадр не пустой
 
         cv::Mat res = content.frame;
-        for(int i = 0; i < coords.size(); i+=2){
-            res.at<cv::Vec3b>(coords[i],coords[i+1]) = cv::Vec3b(0,0,255);
-        }
 
         if(nigga){
-            cv::imshow("video", invertImageColors(res));
+            res = invertImageColors(res);
         }
-        else{cv::imshow("video", res);} // покаызваем очередной кадр в окошке
+
+        for(int i = 0; i < coords.size(); i++){
+            res.at<cv::Vec3b>(coords[i][0],coords[i][1]) = cv::Vec3b(0,0,255);
+        }
+
+        cv::imshow("video", res); // покаызваем очередной кадр в окошке
         cv::setMouseCallback("video", onMouseClick, &content); // делаем так чтобы функция выше (onMouseClick) получала оповещение при каждом клике мышкой
 
         int key = cv::waitKey(1);
@@ -158,42 +163,47 @@ void task4() {
 
     cv::VideoCapture video(0);
 
-//    cv::VideoCapture video_b("lesson03/data/Spin_1.mp4");
 
-    rassert(video.isOpened(), 3423948392481); // проверяем что видео получилось открыть
-
+    rassert(video.isOpened(), 3423948392481);
+    cv::Mat background = cv::imread("lesson03/data/castle_large.jpg");
     MyVideoContent content;
-    bool isSuccess1 = video.read(content.frame);
-    cv::Mat largeCastle = cv::imread("lesson03/data/castle_large.jpg");
-    largeCastle = f_4_0(largeCastle, content.frame);
-
+    bool aboba = true;
     coords.clear();
-    colors.clear();
     while (video.isOpened()) {
+        if((!content.frame.empty())&&aboba){
+
+            background = reshape(background, content.frame.cols, content.frame.rows);
+            aboba = false;
+        }
         bool isSuccess = video.read(content.frame);
         rassert(isSuccess, 348792347819);
         rassert(!content.frame.empty(), 3452314124643);
 
         cv::Mat res = content.frame;
-
-
-        for(cv::Vec3b color : colors){
-
-            res = f_4_1(res, largeCastle, color);
-
-        }
-
+//        res = reshape(res, res.rows/2, res.cols/2);
         if(nigga){
-            cv::imshow("video", invertImageColors(res));
+            res = invertImageColors(res);
         }
-        else{cv::imshow("video", res);} // покаызваем очередной кадр в окошке
+        int delta_color = 0;
+        for(cv::Vec3b color : colors){
+            for(int i = 0; i < res.cols; i++){
+                for(int j = 0; j < res.rows; j++){
+                    if(abs(res.at<cv::Vec3b>(j,i)[0] - color[0]) <= delta_color||
+                    abs(res.at<cv::Vec3b>(j,i)[1] - color[1]) <= delta_color||
+                    abs(res.at<cv::Vec3b>(j,i)[2] - color[2]) <= delta_color){
+//                        res.at<cv::Vec3b>(j,i) = background.at<cv::Vec3b>(j,i);
+                    }
+                }
+            }
+        }
+
+
+        cv::imshow("video", res); // покаызваем очередной кадр в окошке
         cv::setMouseCallback("video", onMouseClick, &content); // делаем так чтобы функция выше (onMouseClick) получала оповещение при каждом клике мышкой
 
         int key = cv::waitKey(1);
         if (key == 32 || key == 27) {break;}
-
     }
-
 
 
     // при клике мышки - определяется цвет пикселя в который пользователь кликнул, теперь этот цвет считается прозрачным (как было с черным цветом у единорога)
