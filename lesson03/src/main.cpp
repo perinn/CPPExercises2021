@@ -81,38 +81,231 @@ void task2() {
 }
 
 struct MyVideoContent {
+    std::vector<std::vector<int>> pix;
     cv::Mat frame;
-    int lastClickX;
-    int lastClickY;
+    cv::Mat ans;
+    cv::Mat fon;
+    cv::Mat frame1;
+    cv::Mat mat;
+    std::vector<std::vector<int>> mas;
+    int lastClickX = 0;
+    int lastClickY = 0;
+    bool kaka = false;
+    bool pack = false, dil = false, er = false, diller = false, elrond = false;
+
+    void Set(int a){
+        switch (a) {
+            case 3:
+                dil = true, er = false, diller = false, elrond = false;
+                break;
+            case 4:
+                dil = false, er = true, diller = false, elrond = false;
+                break;
+            case 5:
+                dil = false, er = false, diller = true, elrond = false;
+                break;
+            case 6:
+                dil = false, er = false, diller = false, elrond = true;
+                break;
+            case 7:
+                dil = false, er = false, diller = false, elrond = false;
+                break;
+            default:
+                rassert(true, "ПИЗДА")
+        }
+    }
+
+    void Click(int x, int y){
+        lastClickX = x;
+        lastClickY = y;
+    }
+
+    void setF(cv::Mat qwerty){
+        frame1 = qwerty;
+    }
+
+    void SetFon(cv::Mat fon1){
+        fon = fon1;
+    }
+
+    cv::Mat Paint(std::vector<std::vector<int>> q){
+        for (int i = 0; i < q.size(); ++i) {
+//            std::cout << q[i][0] << "   " << q[i][1] << std::endl;
+            if (kaka) {
+                frame.at<cv::Vec3b>(q[i][1], q[i][0]) = cv::Vec3b(255, 255, 0);
+            }
+            else{
+                frame.at<cv::Vec3b>(q[i][1], q[i][0]) = cv::Vec3b(0, 0, 255);
+            }
+        }
+        if (kaka){
+            return invertImageColors(frame);
+        }
+        else{
+            return frame;
+        }
+    }
+
+    cv::Mat Paint1(){
+        rassert(!frame1.empty(), 123);
+//        std::cout << pix.size();
+        for (int i = 0; i < pix.size(); ++i) {
+            if (kaka) {
+                frame = rast1(frame.clone(),frame1.clone(),pix[i]);
+            }
+        }
+        return frame;
+    }
+
+    cv::Mat Paint2(){
+        rassert(!frame1.empty(), 123);
+        rassert(!fon.empty(), 123);
+//        std::cout << pix.size();
+        frame = rast2(frame,frame1,fon);
+        return frame;
+    }
+
+    cv::Mat Paint3(){
+        rassert(!frame1.empty(), 123);
+        rassert(!fon.empty(), 123);
+        rassert(mat.rows == frame.rows, "123431234314")
+        rassert(mat.cols == frame.cols, "ПАРАПАПАРА2")
+        cv::Vec3b color = frame.at<cv::Vec3b>(13, 5);
+        cv::Vec3b colorf = fon.at<cv::Vec3b>(13, 5);
+        int ret = 10;
+        for (int i = 0; i < mas.size(); ++i) {
+            for (int j = 0; j < mas[i].size(); j++) {
+                color = frame.at<cv::Vec3b>(j, i);
+                colorf = fon.at<cv::Vec3b>(j, i);
+                if (((int) color[0] < (int)colorf[0]+ret && (int) color[1] < (int)colorf[1]+ret && (int) color[2] < (int)colorf[2]+ret)&&((int) color[0] > (int)colorf[0]-ret && (int) color[1] > (int)colorf[1]-ret && (int) color[2] > (int)colorf[2]-ret)){
+                    mas[i][j] = 1;
+                }
+            }
+        }
+        ans = frame;
+        if (dil){
+            mas = Dilate(mas, 10);
+        }
+        if (er){
+            mas = Erode(mas, 10);
+        }
+        if (diller){
+            mas = Dilate(mas, 10);
+            mas = Erode(mas, 10);
+        }
+        if (elrond){
+            mas = Erode(mas, 10);
+            mas = Dilate(mas, 10);
+        }
+//        std::cout << 1;
+        for (int i = 0; i < mas.size(); ++i) {
+            for (int j = 0; j < mas[i].size(); j++) {
+                if (mas[i][j] == 1){
+                    ans.at<cv::Vec3b>(j,i) = frame1.at<cv::Vec3b>(j,i);
+                    mas[i][j] = 0;
+                }
+            }
+        }
+//        std::cout << 1;
+//        std::cout << pix.size();
+        //frame = rast2(frame,frame1,fon);
+        return frame;
+    }
+
+    void Mat(){
+        std::vector<int> q;
+        q.resize(mat.rows);
+        for (int i = 0; i < mat.cols; ++i) {
+            for (int j = 0; j < mat.rows; j++) {
+                q[j] = 0;
+            }
+            mas.push_back(q);
+        }
+    }
+
+    std::vector<int> Get(){
+        std::vector<int> a;
+//        std::cout << "Left click at x=" << lastClickX << ", y=" << lastClickY << std::endl;
+        a.push_back(lastClickX);
+        a.push_back(lastClickY);
+        return a;
+    }
+
+    void Dpix(std::vector<int> a){
+        pix.push_back(a);
+    }
+
+    void Dokaka(){
+        if (kaka){
+            kaka = false;
+        }
+        else{
+            kaka = true;
+        }
+    }
 };
 
 std::vector<std::vector<int>> coords;
 std::vector<cv::Vec3b> colors;
+cv::Mat background1 = cv::Mat (480, 640, CV_8UC3, cv::Scalar (0,0,0));
 bool nigga = false;
 
 void onMouseClick(int event, int x, int y, int flags, void *pointerToMyVideoContent) {
-    MyVideoContent &content = *((MyVideoContent*) pointerToMyVideoContent);
+//    MyVideoContent &content = *((MyVideoContent*) pointerToMyVideoContent);
+//
+//    cv::Mat res = content.frame;
+//    // не обращайте внимание на предыдущую строку, главное что важно заметить:
+//    // content.frame - доступ к тому кадру что был только что отображен на экране
+//    // content.lastClickX - переменная которая вам тоже наверняка пригодится
+//    // вы можете добавить своих переменных в структурку выше (считайте что это описание объекта из ООП, т.к. почти полноценный класс)
+//
+//    if (event == cv::EVENT_LBUTTONDOWN) { // если нажата левая кнопка мыши
+//        std::cout << "Left click at x=" << x << ", y=" << y << std::endl;
+//        std::vector<int> tmp;
+//        tmp.push_back(y);
+//        tmp.push_back(x);
+//        coords.push_back(tmp);
+//
+//        colors.push_back(res.at<cv::Vec3b>(y,x));
+//        std::cout << res.at<cv::Vec3b>(y,x) << std::endl;
+//    }
+//    if(event == cv::EVENT_RBUTTONDOWN){
+////        nigga = !nigga;
+//        background1 = content.frame;
+//    }
+//    if(event == cv::EVENT_MOUSEHWHEEL){
+//        background1 = content.frame;
+//    }
 
-    cv::Mat res = content.frame;
+    MyVideoContent &content = *((MyVideoContent*) pointerToMyVideoContent);
     // не обращайте внимание на предыдущую строку, главное что важно заметить:
     // content.frame - доступ к тому кадру что был только что отображен на экране
     // content.lastClickX - переменная которая вам тоже наверняка пригодится
     // вы можете добавить своих переменных в структурку выше (считайте что это описание объекта из ООП, т.к. почти полноценный класс)
 
+    cv::Vec3b color;
+    std::vector<int> b;
+    b.push_back(0);
+    b.push_back(0);
+    b.push_back(0);
     if (event == cv::EVENT_LBUTTONDOWN) { // если нажата левая кнопка мыши
-        std::cout << "Left click at x=" << x << ", y=" << y << std::endl;
-        std::vector<int> tmp;
-        tmp.push_back(y);
-        tmp.push_back(x);
-        coords.push_back(tmp);
-
-        colors.push_back(res.at<cv::Vec3b>(y,x));
-        std::cout << res.at<cv::Vec3b>(y,x) << std::endl;
+//        std::cout << "Left click at x=" << x << ", y=" << y << std::endl;
+        content.pack = true;
+        std::vector<int> a = content.Get();
+        color = content.frame.at<cv::Vec3b>(a[1],a[0]);
+        b[0] = (int)color[0];
+        b[1] = (int)color[1];
+        b[2] = (int)color[2];
+//        std::cout << b[0] << " " << b[1] << " " << b[2] << std::endl;
+        content.Dpix(b);
+        content.Click(x,y);
     }
-    if(event == cv::EVENT_RBUTTONDOWN){
-        nigga = !nigga;
+
+    if (event == cv::EVENT_RBUTTONDOWN){
+        content.Dokaka();
     }
 }
+
 
 void task3() {
     // давайте теперь вместо картинок подключим видеопоток с веб камеры:
@@ -159,62 +352,94 @@ void task3() {
     }
 }
 
-void task4() {
-
+void task4() { int bo;
+    bool big = false, small = false, a = false;
+;    bo = 0;
     cv::VideoCapture video(0);
-
-
     rassert(video.isOpened(), 3423948392481);
-    cv::Mat background = cv::imread("lesson03/data/castle_large.jpg");
     MyVideoContent content;
-    bool aboba = true;
-    coords.clear();
-    while (video.isOpened()) {
-        if((!content.frame.empty())&&aboba){
-
-            background = reshape(background, content.frame.cols, content.frame.rows);
-            aboba = false;
+    std::vector<std::vector<int>> mas;
+    cv::Mat Foto;
+    int q = 0;
+    bool isSuccess = false;
+    while (true){
+        if (bo == 0){
+            isSuccess = video.read(content.frame);
         }
-        bool isSuccess = video.read(content.frame);
+        cv::imshow("video", content.frame);
+        int k = cv::waitKey(10);
+        if (k == 32 || k == 27){
+            content.SetFon(content.frame.clone());
+            break;
+        }
+    }
+    while (true) {
+        if (bo == 0){
+            isSuccess = video.read(content.frame);
+        }
+        else{
+
+        }
+
+
         rassert(isSuccess, 348792347819);
         rassert(!content.frame.empty(), 3452314124643);
 
-        cv::Mat res = content.frame;
-//        res = reshape(res, res.rows/2, res.cols/2);
-        if(nigga){
-            res = invertImageColors(res);
+
+        if (q == 0){
+            content.setF(baba(cv::imread("lesson03/data/castle_large.jpg"), content.frame.clone()));
+            q++;
+            cv::Mat matata(content.frame.rows, content.frame.cols, CV_32FC1, cv::Scalar(0.0f)); // в этом примере мы решили изначально заполнить картинку числом 1.5
+            content.mat = matata;
+            content.Mat();
         }
-        int delta_color = 0;
-        for(cv::Vec3b color : colors){
-            for(int i = 0; i < res.cols; i++){
-                for(int j = 0; j < res.rows; j++){
-                    if(abs(res.at<cv::Vec3b>(j,i)[0] - color[0]) <= delta_color||
-                    abs(res.at<cv::Vec3b>(j,i)[1] - color[1]) <= delta_color||
-                    abs(res.at<cv::Vec3b>(j,i)[2] - color[2]) <= delta_color){
-//                        res.at<cv::Vec3b>(j,i) = background.at<cv::Vec3b>(j,i);
-                    }
-                }
+
+        if (big){
+            cv::imshow("video", content.frame1); // покаызваем очередной кадр в окошке
+        }
+        else if(small){
+            cv::imshow("video", content.Paint2()); // покаызваем очередной кадр в окошке
+        }
+        else if (a){
+            cv::imshow("video", content.Paint3()); // покаызваем очередной кадр в окошке
+        }
+        else{
+            cv::imshow("video", content.Paint1()); // покаызваем очередной кадр в окошке
+        }
+        cv::setMouseCallback("video", onMouseClick, &content); // делаем так чтобы функция выше (onMouseClick) получала оповещение при каждом клике мышкой
+        int key = cv::waitKey(10);
+//        std::cout << key;
+        if (key == 27){
+            if (big){
+                big = false;
+            }
+            else{
+                big = true;
             }
         }
-
-
-        cv::imshow("video", res); // покаызваем очередной кадр в окошке
-        cv::setMouseCallback("video", onMouseClick, &content); // делаем так чтобы функция выше (onMouseClick) получала оповещение при каждом клике мышкой
-
-        int key = cv::waitKey(1);
-        if (key == 32 || key == 27) {break;}
-    }
-
-
-    // при клике мышки - определяется цвет пикселя в который пользователь кликнул, теперь этот цвет считается прозрачным (как было с черным цветом у единорога)
-    // и теперь перед отрисовкой очередного кадра надо подложить вместо прозрачных пикселей - пиксель из отмасштабированной картинки замка (castle_large.jpg)
-
-    // TODO попробуйте сделать так чтобы цвет не обязательно совпадал абсолютно для прозрачности (чтобы все пиксели похожие на тот что был кликнут - стали прозрачными, а не только идеально совпадающие)
-
-    // TODO подумайте, а как бы отмаскировать фон целиком несмотря на то что он разноцветный?
-    // а как бы вы справились с тем чтобы из фотографии с единорогом и фоном удалить фон зная как выглядит фон?
-    // а может сделать тот же трюк с вебкой - выйти из вебки в момент запуска программы, и первый кадр использовать как кадр-эталон с фоном который надо удалять (делать прозрачным)
-}
+        else if (key == 49){
+            if (small){
+                small = false;
+            }
+            else{
+                small = true;
+            }
+        }
+        else if (key == 50){
+            if (a){
+                a = false;
+            }
+            else{
+                a = true;
+            }
+        }
+        else if (key > 50 && key < 56){
+            content.Set(key - 48);
+        }
+        if (key == 32){
+            break;
+        }
+    }}
 
 int main() {
     try {
