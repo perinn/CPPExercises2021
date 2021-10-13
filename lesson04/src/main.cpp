@@ -13,13 +13,11 @@ void testingMyDisjointSets() {
     DisjointSet set(5);
     rassert(set.count_differents() == 5, 2378923791);
     for (int element = 0; element < 5; ++element) {
-//        std::cout << "PEDIK" << std::endl;
         rassert(set.get_set(element) == element, 23892803643);
         rassert(set.get_set_size(element) == 1, 238928031);
     }
     set.union_sets(0,1);
     rassert(set.count_differents() == 4, 123141253)
-//    std::cout << "DIMA - GEY" << std::endl;
     rassert(set.get_set_size(0) == 2, 123141253)
     set.union_sets(0,2);
     set.union_sets(0,3);
@@ -92,7 +90,7 @@ struct MyVideoContent {
                 dil = false, er = false, diller = false, elrond = false;
                 break;
             default:
-                rassert(true, "ПИЗДА")
+                rassert(true, "error")
         }
     }
 
@@ -111,7 +109,6 @@ struct MyVideoContent {
 
     cv::Mat Paint(std::vector<std::vector<int>> q){
         for (int i = 0; i < q.size(); ++i) {
-//            std::cout << q[i][0] << "   " << q[i][1] << std::endl;
             if (kaka) {
                 frame.at<cv::Vec3b>(q[i][1], q[i][0]) = cv::Vec3b(255, 255, 0);
             }
@@ -129,7 +126,6 @@ struct MyVideoContent {
 
     cv::Mat Paint1(){
         rassert(!frame1.empty(), 123);
-//        std::cout << pix.size();
         for (int i = 0; i < pix.size(); ++i) {
             if (kaka) {
                 frame = rast1(frame.clone(),frame1.clone(),pix[i]);
@@ -141,7 +137,6 @@ struct MyVideoContent {
     cv::Mat Paint2(){
         rassert(!frame1.empty(), 123);
         rassert(!fon.empty(), 123);
-//        std::cout << pix.size();
         frame = rast2(frame,frame1,fon);
         return frame;
     }
@@ -151,44 +146,6 @@ struct MyVideoContent {
         rassert(!fon.empty(), 123);
         rassert(mat.rows == frame.rows, "123431234314")
         rassert(mat.cols == frame.cols, "ПАРАПАПАРА2")
-//        cv::Vec3b color = frame.at<cv::Vec3b>(13, 5);
-//        cv::Vec3b colorf = fon.at<cv::Vec3b>(13, 5);
-//        for (int i = 0; i < mas.size(); ++i) {
-//            for (int j = 0; j < mas[i].size(); j++) {
-//                color = frame.at<cv::Vec3b>(j, i);
-//                colorf = fon.at<cv::Vec3b>(j, i);
-//                if (((int) color[0] < (int)colorf[0]+ret && (int) color[1] < (int)colorf[1]+ret && (int) color[2] < (int)colorf[2]+ret)&&((int) color[0] > (int)colorf[0]-ret && (int) color[1] > (int)colorf[1]-ret && (int) color[2] > (int)colorf[2]-ret)){
-//                    mas[i][j] = 1;
-//                }
-//            }
-//        }
-//        vasya = mas;
-//        ans = frame.clone();
-//        if (dil){
-//            mas = Dilate(mas, r);
-//        }
-//        if (er){
-//            mas = Erode(mas, r);
-//        }
-//        if (diller){
-//            mas = Dilate(mas, r);
-//            mas = Erode(mas, r);
-//        }
-//        if (elrond){
-//            mas = Erode(mas, r);
-//            mas = Dilate(mas, r);
-//        }
-//        for (int i = 0; i < mas.size(); ++i) {
-//            for (int j = 0; j < mas[i].size(); j++) {
-//                if (mas[i][j] == 1){
-//                    ans.at<cv::Vec3b>(j,i) = frame1.at<cv::Vec3b>(j,i);
-//                    mas[i][j] = 0;
-//                }
-//            }
-//        }
-//        std::cout << 1;
-//        std::cout << pix.size();
-        //frame = rast2(frame,frame1,fon);
         return ans;
     }
 
@@ -289,7 +246,6 @@ struct MyVideoContent {
         bool a = false;
         for (int i = 0; i < mat.cols; ++i) {
             for (int j = 0; j < mat.rows; j++) {
-//                std::cout << mas[i][j] << "   ___PIZDA___   " << i << " " << j << " ";
                 if (vasya[i][j] == 1){
                     a = true;
                     mat.at<cv::Vec3b>(j,i) = cv::Vec3b(255, 255, 255);
@@ -298,7 +254,6 @@ struct MyVideoContent {
                     mat.at<cv::Vec3b>(j,i) = cv::Vec3b(0, 0, 0);
                 }
             }
-//            std::cout << std::endl;
         }
         if (a){
             std::cout << 1;
