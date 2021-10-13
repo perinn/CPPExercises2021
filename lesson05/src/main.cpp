@@ -37,11 +37,11 @@ void testSobel(const std::string &name) {
     cv::Mat dy = convertDXYToDY(dxy); // TODO реализуйте функцию которая вытаскивает силу производной по y (ее абсолютное значение)
     // TODO и удостоверьтесь что результат выглядит так как вы ожидаете, если нет - спросите меня
     cv::imwrite("lesson05/resultsData/" + name + "_dy.jpg", dy);
-//
-//    cv::Mat gradientStrength = convertDXYToGradientLength(dxy); // TODO реализуйте функцию которая считает силу градиента в каждом пикселе
+
+    cv::Mat gradientStrength = convertDXYToGradientLength(dxy); // TODO реализуйте функцию которая считает силу градиента в каждом пикселе
 //    // точнее - его длину, ведь градиент - это вектор (двухмерный, ведь у него две компоненты), а у вектора всегда есть длина - sqrt(x^2+y^2)
 //    // TODO и удостоверьтесь что результат выглядит так как вы ожидаете, если нет - спросите меня
-//    cv::imwrite("lesson05/resultsData/" + name + "_gradientLength.jpg", gradientStrength);
+    cv::imwrite("lesson05/resultsData/" + name + "_gradientLength.jpg", gradientStrength);
 //    // для valve.jpg должно быть похоже на картинку с википедии - https://ru.wikipedia.org/wiki/%D0%9E%D0%BF%D0%B5%D1%80%D0%B0%D1%82%D0%BE%D1%80_%D0%A1%D0%BE%D0%B1%D0%B5%D0%BB%D1%8F
 }
 
@@ -53,8 +53,9 @@ int main() {
             testSobel("line0" + std::to_string(i));
         }
 
-        for (int i = 1; i <= 4; ++i) {
+        for (int i = 11; i <= 14; ++i) {
             // TODO сделайте вызов тестирования картинок line11.jpg - line14.jpg
+            testSobel("line" + std::to_string(i));
         }
 
         testSobel("line21_water_horizont");
