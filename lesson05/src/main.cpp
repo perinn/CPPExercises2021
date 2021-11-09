@@ -47,22 +47,23 @@ void testSobel(const std::string &name) {
 
 int main() {
     try {
-        testBGRToGray();
-
-        for (int i = 1; i <= 4; ++i) {
-            testSobel("line0" + std::to_string(i));
-        }
-
-        for (int i = 11; i <= 14; ++i) {
-            // TODO сделайте вызов тестирования картинок line11.jpg - line14.jpg
-            testSobel("line" + std::to_string(i));
-        }
-
-        testSobel("line21_water_horizont");
-        testSobel("multiline1_paper_on_table");
-        testSobel("multiline2_paper_on_table");
-
-        testSobel("valve");
+//        testBGRToGray();
+//
+//        for (int i = 1; i <= 4; ++i) {
+//            testSobel("line0" + std::to_string(i));
+//        }
+//
+//        for (int i = 11; i <= 14; ++i) {
+//            // TODO сделайте вызов тестирования картинок line11.jpg - line14.jpg
+//            testSobel("line" + std::to_string(i));
+//        }
+//
+//        testSobel("line21_water_horizont");
+//        testSobel("multiline1_paper_on_table");
+//        testSobel("multiline2_paper_on_table");
+//
+//        testSobel("valve");
+//        testSobel("01");
         return 0;
     } catch (const std::exception &e) {
         std::cout << "Exception! " << e.what() << std::endl;
