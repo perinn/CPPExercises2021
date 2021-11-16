@@ -28,3 +28,5 @@ std::vector<PolarLineExtremum> findLocalExtremums(cv::Mat houghSpace);
 // Эта функция по множеству всех найденных локальных экстремумов (прямых) находит самую популярную прямую
 // и возвращает только вектор из тех прямых, что не сильно ее хуже (набрали хотя бы thresholdFromWinner голосов от победителя, т.е. например половину)
 std::vector<PolarLineExtremum> filterStrongLines(std::vector<PolarLineExtremum> allLines, double thresholdFromWinner);
+
+std::vector<PolarLineExtremum> CutLines(std::vector<PolarLineExtremum> strongLines, cv::Mat img);
