@@ -10,7 +10,7 @@ double Gauss(int x, int y, double sigma){
 }
 
 cv::Mat blur(cv::Mat img, double sigma) {
-    cv::Mat res_img(img.rows, img.cols, CV_32FC3);
+    cv::Mat res_img(img.rows, img.cols, CV_8UC3);
 
     std::vector<std::vector<double>> GaussKoef(2*(int)sigma+1, std::vector<double>(2*(int)sigma+1));
 

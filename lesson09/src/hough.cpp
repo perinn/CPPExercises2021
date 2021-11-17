@@ -17,18 +17,133 @@ double estimateR(double x0, double y0, double theta0radians)
 }
 
 
-cv::Mat buildHough(cv::Mat sobel) {
-    // TODO скопируйте сюда свою реализацию построения пространства Хафа из прошлого задания - lesson08
+cv::Mat buildHough(cv::Mat sobel) {// единственный аргумент - это результат свертки Собелем изначальной картинки
+    // проверяем что входная картинка - одноканальная и вещественная:
+    rassert(sobel.type() == CV_32FC1, 237128273918006);
+
+    int width = sobel.cols;
+    int height = sobel.rows;
+
+    // решаем какое максимальное значение у параметра theta в нашем пространстве прямых
+    int max_theta = 360;
+
+    // решаем какое максимальное значение у параметра r в нашем пространстве прямых:
+    int max_r = sqrt(height*height+width*width); // TODO замените это число так как вам кажется правильным (отталкиваясь от разрешения картинки - ее ширины и высоты)
+
+    // создаем картинку-аккумулятор, в которой мы будем накапливать суммарные голоса за прямые
+    // так же известна как пространство Хафа
+    cv::Mat accumulator(max_r, 360, CV_32FC1, 0.0f); // TODO подумайте какого разрешения она должна быть и поправьте ее размер
+
+    // TODO не забудьте заполнить эту матрицу-картинку-аккумулятор нулями (очистить)
+
+    // проходим по всем пикселям нашей картинки (уже свернутой оператором Собеля)
+    for (int y0 = 0; y0 < height; ++y0) {
+        for (int x0 = 0; x0 < width; ++x0) {
+            // смотрим на пиксель с координатами (x0, y0)
+            float strength = sobel.at<float>(y0, x0);// TODO считайте его "силу градиента" из картинки sobel
+
+            // теперь для текущего пикселя надо найти все возможные прямые которые через него проходят
+            // переберем параметр theta по всему возможному диапазону (в градусах):
+            for (int theta0 = 0; theta0 < max_theta; ++theta0) {
+                // TODO рассчитайте на базе информации о том какие координаты у пикселя - (x0, y0) и какой параметр theta0 мы сейчас рассматриваем
+                // TODO обратите внимание что функции sin/cos принимают углы в радианах, поэтому сначала нужно пересчитать theta0 в радианы (воспользуйтесь константой PI)
+                const double PI = 3.14159265358979323846264338327950288;
+                float r0 = x0*cos(theta0*(2*PI/360))+y0*sin(theta0*(2*PI/360));
+
+                int i = theta0;
+                int j = r0;
+
+                if( r0<0){
+                    j = x0*cos((theta0+180)*(2*PI/360))+y0*sin((theta0+180)*(2*PI/360));
+                    i = (theta0+180)%360;
+                }
+
+                // TODO теперь рассчитайте координаты пикслея в пространстве Хафа (в картинке-аккумуляторе) соответсвующего параметрам theta0, r0
+
+
+                // чтобы проверить не вышли ли мы за пределы картинки-аккумулятора - давайте явно это проверим:
+                rassert(i >= 0, 237891731289044);
+                rassert(i < accumulator.cols, 237891731289045);
+                rassert(j >= 0, 237891731289046);
+                rassert(j < accumulator.rows, 237891731289047);
+                // теперь легко отладить случай выхода за пределы картинки
+                // TODO просто поставьте точку остановки внутри rassert:
+                // нажмите Ctrl+Shift+N -> rasserts.cpp
+                // и поставьте точку остановки на 8 строке: "return line;"
+
+                // TODO и добавьте в картинку-аккумулятор наш голос с весом strength (взятый из картинки свернутой Собелем)
+                accumulator.at<float>(j, i) += strength;
+            }
+        }
+    }
+
+    return accumulator;
 }
 
 std::vector<PolarLineExtremum> findLocalExtremums(cv::Mat houghSpace)
 {
-    // TODO скопируйте сюда свою реализацию извлечения экстремумов из прошлого задания - lesson08
+    rassert(houghSpace.type() == CV_32FC1, 234827498237080);
+
+    const int max_theta = 360;
+    rassert(houghSpace.cols == max_theta, 233892742893082);
+    const int max_r = houghSpace.rows;
+
+    std::vector<PolarLineExtremum> winners;
+
+    for (int theta = 0; theta < max_theta; ++theta) {
+        for (int r = 0; r < max_r; ++r) {
+            // TODO
+            // ...
+            // if (ok) {
+            //     PolarLineExtremum line(theta, r, votes);
+            //     winners.push_back(line);
+            // }
+            bool aboba = true;
+            for( int i = -1; i <=1; i++){
+                for( int j = -1; j<=1 ; j++){
+                    if(i+theta < max_theta && i+theta >= 0 && j+r < max_r && j+r >=0 && i!=0 && j !=0){
+                        if(houghSpace.at<float>(j+r, i+theta) >= houghSpace.at<float>(r, theta)){
+                            aboba = false;
+                        }
+                    }
+                }
+            }
+            if(aboba){
+                PolarLineExtremum line = PolarLineExtremum((double)theta, (double)r, (double)houghSpace.at<float>(r,theta));
+                winners.push_back(line);
+            }
+        }
+    }
+
+    return winners;
 }
 
 std::vector<PolarLineExtremum> filterStrongLines(std::vector<PolarLineExtremum> allLines, double thresholdFromWinner)
 {
-    // TODO скопируйте сюда свою реализацию фильтрации сильных прямых из прошлого задания - lesson08
+    std::vector<PolarLineExtremum> strongLines;
+
+    // Эта функция по множеству всех найденных локальных экстремумов (прямых) находит самую популярную прямую
+    // и возвращает только вектор из тех прямых, что не сильно ее хуже (набрали хотя бы thresholdFromWinner голосов от победителя, т.е. например половину)
+
+    // TODO
+
+    PolarLineExtremum max_line = PolarLineExtremum(0.0,0.0,0.0);
+    for(PolarLineExtremum i : allLines){
+        if(i.votes > max_line.votes) {
+            max_line.theta = i.theta;
+            max_line.r = i.r;
+            max_line.votes = i.votes;
+        }
+    }
+
+    for(PolarLineExtremum i : allLines){
+        if(i.votes >= (double)thresholdFromWinner*max_line.votes) {
+            strongLines.push_back(i);
+        }
+    }
+
+
+    return strongLines;
 }
 
 cv::Mat drawCirclesOnExtremumsInHoughSpace(cv::Mat houghSpace, std::vector<PolarLineExtremum> lines, int radius)
@@ -51,8 +166,12 @@ cv::Mat drawCirclesOnExtremumsInHoughSpace(cv::Mat houghSpace, std::vector<Polar
         PolarLineExtremum line = lines[i];
 
         // Пример как рисовать кружок в какой-то точке (закомментируйте его):
-        cv::Point point(100, 50);
-        cv::Scalar color(0, 0, 255); // BGR, т.е. красный цвет
+//        cv::Point point(100, 50);
+//        cv::Scalar color(0, 0, 255); // BGR, т.е. красный цвет
+//        cv::circle(houghSpaceWithCrosses, point, 3, color);
+
+        cv::Point point(line.theta, line.r);
+        cv::Scalar color(0,0,255);
         cv::circle(houghSpaceWithCrosses, point, 3, color);
 
         // TODO отметьте в пространстве Хафа красным кружком радиуса radius экстремум соответствующий прямой line
@@ -111,18 +230,19 @@ cv::Mat drawLinesOnImage(cv::Mat img, std::vector<PolarLineExtremum> lines)
         // 1) раскомментировать эти четыре строки ниже
         // 2) поставить каретку (указатель где вы вводите новые символы) внутри скобок функции (или конструктора, т.е. там где были три вопроса: ???)
         // 3) нажать Ctrl+P чтобы показать список параметров (P=Parameters)
-//        PolarLineExtremum leftImageBorder(???);
-//        PolarLineExtremum bottomImageBorder(???);
-//        PolarLineExtremum rightImageBorder(???);
-//        PolarLineExtremum topImageBorder(???);
+        PolarLineExtremum leftImageBorder(0,0, 1);
+        PolarLineExtremum bottomImageBorder(90, height, 1);
+        PolarLineExtremum rightImageBorder(0, width, 1);
+        PolarLineExtremum topImageBorder(270, 0, 1);
 
         // TODO воспользуйтесь недавно созданной функций поиска пересечения прямых чтобы найти точки пересечения краев картинки:
-//        pointA = line.intersect(leftImageBorder);
-//        pointB = line.intersect(rightImageBorder);
+        pointA = line.intersect(leftImageBorder);
+        pointB = line.intersect(rightImageBorder);
 
         // TODO а в каких случаях нужно использовать пересечение с верхним и нижним краем картинки?
-//        pointA = line.intersect(???);
-//        pointB = line.intersect(???);
+
+        pointA = line.intersect(bottomImageBorder);
+        pointB = line.intersect(topImageBorder);
 
         // TODO переделайте так чтобы цвет для каждой прямой был случайным (чтобы легче было различать близко расположенные прямые)
         cv::Scalar color(0, 0, 255);

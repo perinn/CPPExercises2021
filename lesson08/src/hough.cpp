@@ -203,25 +203,24 @@ std::vector<PolarLineExtremum> filterStrongLines(std::vector<PolarLineExtremum> 
 
 std::vector<PolarLineExtremum> CutLines(std::vector<PolarLineExtremum> arr0, cv::Mat img){
     std::vector<PolarLineExtremum> arr1;
+    std::vector<int> isdeleted;
     bool a = false;
     for(int i = 0; i < arr0.size(); i++){
         for(int j = 0; j < arr0.size(); j++){
-            if(i!=j && i < arr0.size() && j < arr0.size()) {
-                if (fabs(arr0[i].theta-arr0[j].theta)<5 && fabs(arr0[i].r - arr0[j].r)<0.1*fmin(img.cols, img.rows)){
+            if (fabs(arr0[i].theta-arr0[j].theta)<5 && fabs(arr0[i].r - arr0[j].r)<0.1*fmin(img.cols, img.rows) && std::find(isdeleted.begin(), isdeleted.end(), i) == isdeleted.end() && std::find(isdeleted.begin(), isdeleted.end(), j) == isdeleted.end() ){
                     a = true;
                     double theta0 = (arr0[i].theta+arr0[j].theta)/2;
                     double r0 = (arr0[i].r+arr0[j].r)/2;
                     double votes0 = (arr0[i].votes+arr0[j].votes)/2;
 
-                    arr0.erase(arr0.begin()+j-1);
-                    arr0.erase(arr0.begin()+i-1);
+                    isdeleted.push_back(i);
+                    isdeleted.push_back(j);
 
-                    arr1.emplace_back(theta0, r0, votes0);
+                    arr1.push_back(PolarLineExtremum(theta0, r0, votes0));
                 }
-            }
         }
     }
-    arr1.insert( arr1.end(), arr0.begin(), arr0.end() );
+
     if(a){
         return CutLines(arr1, img);
     }else{

@@ -86,7 +86,7 @@ void test(std::string name) {
     double thresholdFromWinner = 0.5; // хотим оставить только те прямые у кого не менее половины голосов по сравнению с самой популярной прямой
     lines = filterStrongLines(lines, thresholdFromWinner);
 
-    lines = CutLines(lines, sobel_strength);
+//    lines = CutLines(lines, sobel_strength);
 
     std::cout << "Found " << lines.size() << " extremums:" << std::endl;
     for (int i = 0; i < lines.size(); ++i) {
