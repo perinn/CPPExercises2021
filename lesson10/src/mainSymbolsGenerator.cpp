@@ -13,24 +13,24 @@
 
 int randFont() {
     int fonts[] = {
-//            cv::FONT_HERSHEY_SIMPLEX,
-//            cv::FONT_HERSHEY_PLAIN,
-//            cv::FONT_HERSHEY_DUPLEX,
-//            cv::FONT_HERSHEY_COMPLEX,
-//            cv::FONT_HERSHEY_TRIPLEX,
+            cv::FONT_HERSHEY_SIMPLEX,
+            cv::FONT_HERSHEY_PLAIN,
+            cv::FONT_HERSHEY_DUPLEX,
+            cv::FONT_HERSHEY_COMPLEX,
+            cv::FONT_HERSHEY_TRIPLEX,
             cv::FONT_HERSHEY_COMPLEX_SMALL,
-//            cv::FONT_HERSHEY_SCRIPT_SIMPLEX,
-//            cv::FONT_HERSHEY_SCRIPT_COMPLEX,
+            cv::FONT_HERSHEY_SCRIPT_SIMPLEX,
+            cv::FONT_HERSHEY_SCRIPT_COMPLEX,
     };
     // Выбираем случайный шрифт из тех что есть в OpenCV
     int nfonts = (sizeof(fonts) / sizeof(int));
     int font = rand() % nfonts;
 
     // С вероятностью 20% делаем шрифт наклонным (italic)
-//    bool is_italic = ((rand() % 5) == 0);
-//    if  (is_italic) {
-//        font = font | cv::FONT_ITALIC;
-//    }
+    bool is_italic = ((rand() % 5) == 0);
+    if  (is_italic) {
+        font = font | cv::FONT_ITALIC;
+    }
 
     return font;
 }
@@ -101,7 +101,6 @@ void generateAllLetters() {
     }
 }
 
-
 void experiment1() {
     // TODO Проведите эксперимент 1:
     // Пробежав в цикле по каждой букве - посчитайте насколько сильно она отличается между своими пятью примерами? (NSAMPLES_PER_LETTER)
@@ -112,19 +111,41 @@ void experiment1() {
     // А так же среди всех максимальных расстояний найдите максимальное и выведите его в конце
 
     std::cout << "________Experiment 1________" << std::endl;
+    std::vector<double> Maxs;
+
     for (char letter = 'a'; letter <= 'z'; ++letter) {
         std::string letterDir = LETTER_DIR_PATH + "/" + letter;
-
+        std::vector<double> dist;
         for (int sampleA = 1; sampleA <= NSAMPLES_PER_LETTER; ++sampleA) {
             for (int sampleB = sampleA + 1; sampleB <= NSAMPLES_PER_LETTER; ++sampleB) {
                 cv::Mat a = cv::imread(letterDir + "/" + std::to_string(sampleA) + ".png");
                 cv::Mat b = cv::imread(letterDir + "/" + std::to_string(sampleB) + ".png");
                 HoG hogA = buildHoG(a);
+                HoG hogB = buildHoG(b);
                 // TODO
+                dist.push_back(distance(a, b));
+
             }
         }
-//        std::cout << "Letter " << letter << ": max=" << distMax << ", avg=" << (distSum / distN) << std::endl;
+        double distMax = 0.0;
+        double distSum = 0.0;
+        for( double i:dist){
+            distSum += i;
+            if(distMax < i){
+                distMax = i;
+            }
+        }
+        int distN = dist.size();
+        Maxs.push_back(distMax);
+        std::cout << "Letter " << letter << ": max=" << distMax << ", avg=" << (distSum / distN) << std::endl;
     }
+    double Max0 = 0.0;
+    for( double i:Maxs){
+        if(Max0 < i){
+            Max0 = i;
+        }
+    }
+    std::cout << "The biggest max = " << Max0 << std::endl;
 }
 
 void experiment2() {
@@ -139,18 +160,24 @@ void experiment2() {
     std::cout << "________Experiment 2________" << std::endl;
     for (char letterA = 'a'; letterA <= 'z'; ++letterA) {
         std::string letterDirA = LETTER_DIR_PATH + "/" + letterA;
+        for (int sampleA = 1; sampleA <= NSAMPLES_PER_LETTER; ++sampleA){
+            cv::Mat a = cv::imread(letterDirA + "/" + std::to_string(sampleA) + ".png");
 
-        for (char letterB = 'a'; letterB <= 'z'; ++letterB) {
-            if (letterA == letterB) continue;
+            std::vector<std::vector<double>>
+            for (char letterB = 'a'; letterB <= 'z'; ++letterB) {
+                if (letterA == letterB) continue;
+                std::string letterDirB = LETTER_DIR_PATH + "/" + letterB;
+                for (int sampleB = 1; sampleB <= NSAMPLES_PER_LETTER; ++sampleB) {
+                    cv::Mat b = cv::imread(letterDirB + "/" + std::to_string(sampleB) + ".png");
+                    // TODO
 
-            // TODO
+
+                }
+            }
         }
-
-//        std::cout << "Letter " << letterA << ": max=" << letterMax << "/" << distMax << ", min=" << letterMin << "/" << distMin << std::endl;
+        //        std::cout << "Letter " << letterA << ": max=" << letterMax << "/" << distMax << ", min=" << letterMin << "/" << distMin << std::endl;
     }
 }
-
-
 int main() {
     try {
         std::cout << "Generating letters images..." << std::endl;
