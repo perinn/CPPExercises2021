@@ -123,7 +123,8 @@ void experiment1() {
                 HoG hogA = buildHoG(a);
                 HoG hogB = buildHoG(b);
                 // TODO
-                dist.push_back(distance(a, b));
+                double d = distance(hogA, hogB);
+                dist.push_back(d);
 
             }
         }
@@ -158,12 +159,15 @@ void experiment2() {
     //  - Можно ли с этим что-то сделать?
 
     std::cout << "________Experiment 2________" << std::endl;
+    std::vector<double> Mins;
     for (char letterA = 'a'; letterA <= 'z'; ++letterA) {
         std::string letterDirA = LETTER_DIR_PATH + "/" + letterA;
         for (int sampleA = 1; sampleA <= NSAMPLES_PER_LETTER; ++sampleA){
             cv::Mat a = cv::imread(letterDirA + "/" + std::to_string(sampleA) + ".png");
 
-            std::vector<std::vector<double>>
+            std::vector<double> dist;
+            std::vector<std::string> letters;
+
             for (char letterB = 'a'; letterB <= 'z'; ++letterB) {
                 if (letterA == letterB) continue;
                 std::string letterDirB = LETTER_DIR_PATH + "/" + letterB;
@@ -171,12 +175,22 @@ void experiment2() {
                     cv::Mat b = cv::imread(letterDirB + "/" + std::to_string(sampleB) + ".png");
                     // TODO
 
+                    HoG hogA = buildHoG(a);
+                    HoG hogB = buildHoG(b);
 
+                    dist.push_back(distance(hogA, hogB));
+                    letters.push_back(letterB + std::to_string(sampleB));
                 }
             }
+            int distMax_ind = max_ind(dist);
+            int distMin_ind = min_ind(dist);
+            Mins.push_back(dist[distMin_ind]);
+            std::cout << "Letter " << letterA + std::to_string(sampleA)<< ": max=" << letters[distMax_ind] << "/" << dist[distMax_ind] << ", min=" << letters[distMin_ind] << "/" << dist[distMin_ind] << std::endl;
         }
-        //        std::cout << "Letter " << letterA << ": max=" << letterMax << "/" << distMax << ", min=" << letterMin << "/" << distMin << std::endl;
+        std::cout << "" << std::endl;
     }
+    std::cout << "Average of mins =" << avg(Mins)<< std::endl;
+
 }
 int main() {
     try {

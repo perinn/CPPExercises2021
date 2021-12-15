@@ -20,3 +20,8 @@ std::ostream& operator << (std::ostream& os, const HoG& hog);
 
 // TODO эту функцию вам надо реализовать
 double distance(HoG a, HoG b);
+
+int min_ind(std::vector<double> arr);
+int max_ind(std::vector<double> arr);
+double avg(std::vector<double> arr);
+double sum(std::vector<double> arr);

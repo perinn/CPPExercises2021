@@ -114,3 +114,47 @@ double distance(HoG a, HoG b) {
     res = sqrt(res);
     return res;
 }
+
+int min_ind(std::vector<double> arr){
+    double min = arr[0];
+    for(int i = 0; i < arr.size(); i++){
+        if(arr[i]<min){
+            min = arr[i];
+        }
+    }
+    int j = 0;
+    for(int i = 0; i < arr.size(); i++){
+        if(arr[i]==min){
+            j = i;
+        }
+    }
+    return j;
+}
+
+int max_ind(std::vector<double> arr){
+    double max = arr[0];
+    for(int i = 0; i < arr.size(); i++){
+        if(arr[i]>max){
+            max = arr[i];
+        }
+    }
+    int j = 0;
+    for(int i = 0; i < arr.size(); i++){
+        if(arr[i]==max){
+            j = i;
+        }
+    }
+    return j;
+}
+
+double sum(std::vector<double> arr){
+    double sum = 0.0;
+    for(double i: arr){
+        sum+=i;
+    }
+    return sum;
+}
+
+double avg(std::vector<double> arr){
+    return sum(arr)/arr.size();
+}

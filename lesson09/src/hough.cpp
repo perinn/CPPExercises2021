@@ -206,6 +206,29 @@ cv::Point PolarLineExtremum::intersect(PolarLineExtremum that)
     return cv::Point(x, y);
 }
 
+bool PolarLineExtremum::exist_intersect(PolarLineExtremum that){
+    double theta0 = this->theta;
+    double r0 = this->r;
+
+    // Другая прямая - другой объект (that) который был передан в этот метод как аргумент, у этой прямой такие параметры:
+    double theta1 = that.theta;
+    double r1 = that.r;
+
+    // TODO реализуйте поиск пересечения этих двух прямых, напоминаю что формула прямой описана тут - https://www.polarnick.com/blogs/239/2021/school239_11_2021_2022/2021/11/02/lesson8-hough-transform.html
+    // после этого загуглите как искать пересечение двух прямых, пример запроса: "intersect two 2d lines"
+    // и не забудьте что cos/sin принимают радианы (используйте toRadians)
+    cv::Point p1(r0/cos(toRadians(theta0)), 0);
+    cv::Point p2(0, r0/sin(toRadians(theta0)));
+    cv::Point p3(r1/cos(toRadians(theta1)), 0);
+    cv::Point p4(0, r1/sin(toRadians(theta1)));
+    int D = (p1.x-p2.x)*(p3.y-p4.y)-(p1.y-p2.y)*(p3.x-p4.x);
+    if(D==0){
+        return false;
+    }else{
+        return true;
+    }
+}
+
 // TODO Реализуйте эту функцию - пусть она скопирует картинку и отметит на ней прямые в соответствии со списком прямых
 cv::Mat drawLinesOnImage(cv::Mat img, std::vector<PolarLineExtremum> lines)
 {
@@ -242,16 +265,16 @@ cv::Mat drawLinesOnImage(cv::Mat img, std::vector<PolarLineExtremum> lines)
         PolarLineExtremum topImageBorder(270, 0, 1);
 
         // TODO воспользуйтесь недавно созданной функций поиска пересечения прямых чтобы найти точки пересечения краев картинки:
-        pointA = line.intersect(leftImageBorder);
-        pointB = line.intersect(rightImageBorder);
-
-        // TODO а в каких случаях нужно использовать пересечение с верхним и нижним краем картинки?
-        if(pointA.x < 0 || pointA.y<0 || pointA.x >= width || pointA.y >= height) {
+        if(line.exist_intersect(leftImageBorder) && line.exist_intersect(rightImageBorder)){
+            pointA = line.intersect(leftImageBorder);
+            pointB = line.intersect(rightImageBorder);
+        }else{
             pointA = line.intersect(bottomImageBorder);
-        }
-        if(pointB.x < 0 || pointB.y<0 || pointB.x >= width || pointB.y >= height) {
             pointB = line.intersect(topImageBorder);
         }
+        // TODO а в каких случаях нужно использовать пересечение с верхним и нижним краем картинки?
+
+
         // TODO переделайте так чтобы цвет для каждой прямой был случайным (чтобы легче было различать близко расположенные прямые)
         cv::Scalar color(rand()%200 +31, rand()%200 +31, rand()%200 +31);
         cv::line(imgWithLines, pointA, pointB, color);
