@@ -20,10 +20,9 @@ public:
     void plot(cv::Mat &img, double scale, cv::Scalar color); // метод прямой позволяющий нарисовать ее на картинке (т.е. на простом графике)
 
     double getYFromX(double x); // метод прямой позволяющий рассчитать точку на прямой (найти y по x)
-
-    std::vector<cv::Point2f> generatePoints(int n,
-                                        double fromX, double toX,
-                                        double gaussianNoiseSigma); // метод прямой генерирующий n точек неподалеку от прямой
+    double distance(cv::Point2f a);
+    double Line::DIS(std::vector<cv::Point2f> points);
+    std::vector<cv::Point2f> generatePoints(int n, double fromX, double toX, double gaussianNoiseSigma); // метод прямой генерирующий n точек неподалеку от прямой
 };
 
 Line fitLineFromTwoPoints(cv::Point2f a, cv::Point2f b);

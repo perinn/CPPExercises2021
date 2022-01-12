@@ -11,15 +11,12 @@ double Line::getYFromX(double x)
     rassert(b != 0.0, 2734832748932790061); // случай вертикальной прямой не рассматривается для простоты
 
     // TODO 01
-    double y = 1.0;
+    double y = (-(this->c)-(this->a)*x)/(this->b);
 
     return y;
 }
 
-std::vector<cv::Point2f> Line::generatePoints(int n,
-                                              double fromX, double toX,
-                                              double gaussianNoiseSigma)
-{
+std::vector<cv::Point2f> Line::generatePoints(int n, double fromX, double toX, double gaussianNoiseSigma){
     std::vector<cv::Point2f> points;
 
     // пусть зерно случайности порождающее последовательность координат будет однозначно опредляться по числу точек
@@ -29,14 +26,14 @@ std::vector<cv::Point2f> Line::generatePoints(int n,
     // TODO 01 доделайте этот метод:
     //  - поправьте в коде ниже количество точек которые создадутся
     //  - диапазон x в котором создаются точки
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < n; ++i) {
         // это правило генерации случайных чисел - указание какие мы хотим координаты x - равномерно распределенные в диапазоне от fromX  до toX
-        std::uniform_real_distribution<> xDistribution(2.0, 5.0);
+        std::uniform_real_distribution<> xDistribution(fromX, toX);
 
         double x = xDistribution(randomGenerator);
 
         // найдем идеальную координату y для данной координаты x:
-        double idealY = x; // TODO 01 воспользуйтесь методом getYFromX (сначала его надо доделать)
+        double idealY = this->getYFromX(x); // TODO 01 воспользуйтесь методом getYFromX (сначала его надо доделать)
 
         // указание какую мы хотим координату y - распределенную около idealY в соответствии с распределением Гаусса (т.н. нормальное распределение)
         std::normal_distribution<> yDistribution(idealY, gaussianNoiseSigma);
@@ -88,7 +85,7 @@ void plotPoints(cv::Mat &img, std::vector<cv::Point2f> points, double scale, cv:
 
     for (int i = 0; i < points.size(); ++i) {
         // TODO 02 и обратите внимание что делает scale (он указывает масштаб графика)
-        cv::circle(img, points[i] * scale, 5, cv::Scalar(255, 255, 255), 2);
+        cv::circle(img, points[i] * scale, 5, color, 2);
     }
 }
 
@@ -99,21 +96,59 @@ void Line::plot(cv::Mat &img, double scale, cv::Scalar color)
     rassert(img.type() == CV_8UC3, 34237849200055);
 
     // TODO 03 реализуйте отрисовку прямой (воспользуйтесь getYFromX и cv::line(img, cv::Point(...), cv::Point(...), color)), будьте осторожны и не забудьте учесть scale!
-    // cv::line(img, cv::Point(...), cv::Point(...), color);
+    cv::line(img, cv::Point(0, this->getYFromX(0))*scale, cv::Point(img.cols, this->getYFromX(img.cols))*scale, color);
 }
 
 Line fitLineFromTwoPoints(cv::Point2f a, cv::Point2f b)
 {
     rassert(a.x != b.x, 23892813901800104); // для упрощения можно считать что у нас не бывает вертикальной прямой
-
+    double A = a.y - b.y;
+    double B = b.x - a.x;
+    double C = a.x*b.y - b.x*a.y;
     // TODO 04 реализуйте построение прямой по двум точкам
-    return Line(0.0, -1.0, 2.0);
+    return Line(A, B, C);
+}
+
+double Line::distance(cv::Point2f a){
+    double x0 = a.x;
+    double y0 = a.y;
+    double distance = abs(this->a*x0+this->b*y0+this->c)/sqrt((this->a)*(this->a)+(this->b)*(this->b));
+    return distance;
+}
+
+double Line::DIS(std::vector<cv::Point2f> points){
+    double DIS = 0.0;
+    for(cv::Point2f i : points){
+        DIS += this->distance(i);
+    }
+    return DIS;
 }
 
 Line fitLineFromNPoints(std::vector<cv::Point2f> points)
 {
+    std::vector<double> disis;
+    std::vector<Line> lines;
+    for( cv::Point2f a : points){
+        for( cv::Point2f b : points){
+            if (a != b){
+                Line line = fitLineFromTwoPoints(a,b);
+                double dis = line.DIS(points);
+
+                lines.push_back(line);
+                disis.push_back(dis);
+            }
+        }
+    }
+    double mindis = disis[0];
+    int a = 0;
+    for(int i = 0 ; i < disis.size(); ++i){
+        if(disis[i]< mindis){
+            mindis = disis[i];
+            a = i;
+        }
+    }
     // TODO 05 реализуйте построение прямой по многим точкам (такое чтобы прямая как можно лучше учитывала все точки)
-    return Line(0.0, -1.0, 2.0);
+    return lines[a];
 }
 
 Line fitLineFromNNoisyPoints(std::vector<cv::Point2f> points)
@@ -122,9 +157,7 @@ Line fitLineFromNNoisyPoints(std::vector<cv::Point2f> points)
     return Line(0.0, -1.0, 2.0);
 }
 
-std::vector<cv::Point2f> generateRandomPoints(int n,
-                                              double fromX, double toX,
-                                              double fromY, double toY)
+std::vector<cv::Point2f> generateRandomPoints(int n, double fromX, double toX, double fromY, double toY)
 {
     std::vector<cv::Point2f> points;
 
