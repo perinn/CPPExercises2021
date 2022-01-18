@@ -96,15 +96,15 @@ void Line::plot(cv::Mat &img, double scale, cv::Scalar color)
     rassert(img.type() == CV_8UC3, 34237849200055);
 
     // TODO 03 реализуйте отрисовку прямой (воспользуйтесь getYFromX и cv::line(img, cv::Point(...), cv::Point(...), color)), будьте осторожны и не забудьте учесть scale!
-    cv::line(img, cv::Point(0, this->getYFromX(0))*scale, cv::Point(img.cols, this->getYFromX(img.cols))*scale, color);
+    cv::line(img, cv::Point(0, this->getYFromX(0)*scale), cv::Point(img.cols*scale, this->getYFromX(img.cols)*scale), color);
 }
 
 Line fitLineFromTwoPoints(cv::Point2f a, cv::Point2f b)
 {
     rassert(a.x != b.x, 23892813901800104); // для упрощения можно считать что у нас не бывает вертикальной прямой
-    double A = a.y - b.y;
-    double B = b.x - a.x;
-    double C = a.x*b.y - b.x*a.y;
+    double A = b.y - a.y;
+    double B = a.x - b.x;
+    double C = a.y*b.x - b.y*a.x;
     // TODO 04 реализуйте построение прямой по двум точкам
     return Line(A, B, C);
 }
