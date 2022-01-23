@@ -26,8 +26,8 @@ void test1() {
     double sigma = 0.5;
     std::vector<cv::Point2f> pointsNearLine = line.generatePoints(n, fromX, toX, sigma); // TODO 01 доделайте этот метод
     std::cout << pointsNearLine.size() << " points: ";
-    for (int i = 0; i < pointsNearLine.size(); ++i) {
-        std::cout << pointsNearLine[i] << ", ";
+    for (auto & i : pointsNearLine) {
+        std::cout << i << ", ";
     }
     std::cout << std::endl;
 
@@ -35,7 +35,9 @@ void test1() {
     plotPoints(plot, pointsNearLine, plotScale, blue); // TODO 02 поправьте в этой функции цвет которым рисуются точки (нужно использовать аргумент color)
 
     line.plot(plot, plotScale, green); // TODO 03 реализуйте отрисовку прямой
-    cv::Mat plot1 = plot.clone();
+    cv::Mat plot2 = plot.clone();
+    cv::Mat plot3 = plot.clone();
+    cv::Mat plot4 = plot.clone();
     cv::imwrite(results + "test1_1points_and_line.png", plot);
 
 //    for (int i = 0; i + 1 < pointsNearLine.size(); ++i) {
@@ -55,42 +57,42 @@ void test1() {
                 cv::Point2f b = pointsNearLine[j];
                 Line lineI = fitLineFromTwoPoints(a, b);
                 std::cout << "Line #" << (aboba) << ": " << lineI << std::endl;
-                lineI.plot(plot, plotScale, red);
+                lineI.plot(plot2, plotScale, red);
             }
         }
     }
-    cv::imwrite(results + "test1_2all_lines.png", plot);
+    cv::imwrite(results + "test1_2all_lines.png", plot2);
 
     Line oneLineToRuleThemAll = fitLineFromNPoints(pointsNearLine); // TODO 05 реализуйте построение прямой по многим точкам (такое чтобы прямая как можно лучше учитывала все точки)
     std::cout << "One line to rule them all: " << oneLineToRuleThemAll << std::endl;
-    oneLineToRuleThemAll.plot(plot1, plotScale, blue);
-    cv::imwrite(results + "test1_3final_line.png", plot1);
+    oneLineToRuleThemAll.plot(plot3, plotScale, blue);
+    cv::imwrite(results + "test1_3final_line.png", plot3);
 
     // Дальше идет бонусное задание
 
-//    int randomPointsN = 2*n;
-//    double fromY = 0.0;
-//    double toY = plot.rows / plotScale;
-//    // создадим случайных точек не имеющих отношения к нашей искомой прямой (шумные точки)
-//    std::vector<cv::Point2f> randomPoints = generateRandomPoints(randomPointsN, fromX, toX, fromY, toY);
-//
-////    std::cout << randomPoints.size() << " random points: ";
-////    for (int i = 0; i < randomPoints.size(); ++i) {
-////        std::cout << randomPoints[i] << ", ";
-////    }
-////    std::cout << std::endl;
-//
-//    plotPoints(plot, randomPoints, plotScale, red);
-//    cv::imwrite(results + "test1_4random_points.png", plot);
-//
-//    std::vector<cv::Point2f> allPoints;
-//    allPoints.insert(allPoints.end(), randomPoints.begin(), randomPoints.end());
-//    allPoints.insert(allPoints.end(), pointsNearLine.begin(), pointsNearLine.end());
-//
-//    Line oneLineToRuleThemAll2 = fitLineFromNNoisyPoints(allPoints); // TODO 06 БОНУС - реализуйте построение прямой по многим точкам включающим нерелевантные (такое чтобы прямая как можно лучше учитывала НАИБОЛЬШЕЕ число точек)
-//    std::cout << "One line to rule them all (from noisy points): " << oneLineToRuleThemAll2 << std::endl;
-//    oneLineToRuleThemAll2.plot(plot, plotScale, blueRed);
-//    cv::imwrite(results + "test1_5final_line_after_noise.png", plot);
+    int randomPointsN = 2*n;
+    double fromY = 0.0;
+    double toY = plot.rows / plotScale;
+    // создадим случайных точек не имеющих отношения к нашей искомой прямой (шумные точки)
+    std::vector<cv::Point2f> randomPoints = generateRandomPoints(randomPointsN, fromX, toX, fromY, toY);
+
+    std::cout << randomPoints.size() << " random points: ";
+    for (auto & randomPoint : randomPoints) {
+        std::cout << randomPoint << ", ";
+    }
+    std::cout << std::endl;
+
+    plotPoints(plot4, randomPoints, plotScale, red);
+    cv::imwrite(results + "test1_4random_points.png", plot4);
+
+    std::vector<cv::Point2f> allPoints;
+    allPoints.insert(allPoints.end(), randomPoints.begin(), randomPoints.end());
+    allPoints.insert(allPoints.end(), pointsNearLine.begin(), pointsNearLine.end());
+
+    Line oneLineToRuleThemAll2 = fitLineFromNNoisyPoints(allPoints); // TODO 06 БОНУС - реализуйте построение прямой по многим точкам включающим нерелевантные (такое чтобы прямая как можно лучше учитывала НАИБОЛЬШЕЕ число точек)
+    std::cout << "One line to rule them all (from noisy points): " << oneLineToRuleThemAll2 << std::endl;
+    oneLineToRuleThemAll2.plot(plot4, plotScale, blueRed);
+    cv::imwrite(results + "test1_5final_line_after_noise.png", plot4);
 }
 
 int main() {

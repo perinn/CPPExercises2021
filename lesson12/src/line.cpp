@@ -5,6 +5,7 @@
 #include <opencv2/imgproc.hpp>
 
 #include <random>
+#include <iostream>
 
 double Line::getYFromX(double x)
 {
@@ -154,7 +155,36 @@ Line fitLineFromNPoints(std::vector<cv::Point2f> points)
 Line fitLineFromNNoisyPoints(std::vector<cv::Point2f> points)
 {
     // TODO 06 БОНУС - реализуйте построение прямой по многим точкам включающим нерелевантные (такое чтобы прямая как можно лучше учитывала НАИБОЛЬШЕЕ число точек)
-    return Line(0.0, -1.0, 2.0);
+    std::vector<Line> lines;
+//    std::vector<std::vector<cv::Point2f>> twopoints;
+    std::vector<double> inliers;
+    for(int i = 0; i < points.size(); i++){
+        for(int j = 0; j < points.size(); j++){
+            if(i!=j) {
+                cv::Point2f a = points[i];
+                cv::Point2f b = points[j];
+                Line line = fitLineFromTwoPoints(a, b);
+                lines.push_back(line);
+                int inliersi = 0;
+                for(auto & point : points){
+                    if(line.distance(point) <= 1){
+                        inliersi += 1;
+                    }
+                }
+                inliers.push_back(inliersi);
+            }
+        }
+    }
+    double inliers_max = inliers[0];
+    int inliers_max_index = 0;
+    for(int i = 0; i < inliers.size(); i++){
+        if(inliers[i]>inliers_max){
+            inliers_max = inliers[i];
+            inliers_max_index = i;
+        }
+    }
+    std::cout << inliers_max << std::endl;
+    return lines[inliers_max_index];
 }
 
 std::vector<cv::Point2f> generateRandomPoints(int n, double fromX, double toX, double fromY, double toY)
