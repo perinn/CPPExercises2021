@@ -22,7 +22,7 @@ struct Edge {
     {}
 };
 
-[[noreturn]] void run() {
+void run() {
     // https://codeforces.com/problemset/problem/20/C?locale=ru
     // Не требуется сделать оптимально быструю версию, поэтому если вы получили:
     //

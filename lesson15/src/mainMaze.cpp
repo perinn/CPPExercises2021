@@ -60,15 +60,16 @@ void run(int mazeNumber) {
             unsigned char red = color[2];
 
             int u = encodeVertex(j,i,maze.rows, maze.cols);
-
+            int w = 1;
             if(j+1<maze.rows){
                 int v = encodeVertex(j+1,i,maze.rows, maze.cols);
                 cv::Vec3b color1 = maze.at<cv::Vec3b>(j+1, i);
                 unsigned char blue1 = color1[0];
                 unsigned char green1 = color1[1];
                 unsigned char red1 = color1[2];
-                int w = 1+abs(blue-blue1)+abs(green-green1)+abs(red-red1);
-                if(w==1+255*3){w=INF;}
+                w+=abs(blue-blue1)+abs(green-green1)+abs(red-red1);
+                if(w>=42*3){w=INF;}
+                else{w=1;}
                 edges_by_vertex[u].push_back(Edge(u,v, w));
             }
             if(j-1>=0){
@@ -77,8 +78,9 @@ void run(int mazeNumber) {
                 unsigned char blue1 = color1[0];
                 unsigned char green1 = color1[1];
                 unsigned char red1 = color1[2];
-                int w = 1+abs(blue-blue1)+abs(green-green1)+abs(red-red1);
-                if(w==1+255*3){w=INF;}
+                w+=abs(blue-blue1)+abs(green-green1)+abs(red-red1);
+                if(w>=42*3){w=INF;}
+                else{w=1;}
                 edges_by_vertex[u].push_back(Edge(u,v, w));
             }
             if(i+1<maze.cols){
@@ -87,8 +89,9 @@ void run(int mazeNumber) {
                 unsigned char blue1 = color1[0];
                 unsigned char green1 = color1[1];
                 unsigned char red1 = color1[2];
-                int w = 1+abs(blue-blue1)+abs(green-green1)+abs(red-red1);
-                if(w==1+255*3){w=INF;}
+                w+=abs(blue-blue1)+abs(green-green1)+abs(red-red1);
+                if(w>=42*3){w=INF;}
+                else{w=1;}
                 edges_by_vertex[u].push_back(Edge(u,v, w));
             }
             if(i-1>=0){
@@ -97,8 +100,9 @@ void run(int mazeNumber) {
                 unsigned char blue1 = color1[0];
                 unsigned char green1 = color1[1];
                 unsigned char red1 = color1[2];
-                int w = 1+abs(blue-blue1)+abs(green-green1)+abs(red-red1);
-                if(w==1+255*3){w=INF;}
+                w+=abs(blue-blue1)+abs(green-green1)+abs(red-red1);
+                if(w>=42*3){w=INF;}
+                else{w=1;}
                 edges_by_vertex[u].push_back(Edge(u,v, w));
             }
 
@@ -144,6 +148,7 @@ void run(int mazeNumber) {
         if(b == INF || a==finish){break;}
 
         for(int j = 0; j < edges_by_vertex[a].size(); j++){
+            if(edges_by_vertex[a][j].w==INF){continue;}
             if(distances[edges_by_vertex[a][j].v] > distances[a]+edges_by_vertex[a][j].w){
                 distances[edges_by_vertex[a][j].v] = distances[a]+edges_by_vertex[a][j].w;
                 back_step[edges_by_vertex[a][j].v] = a;
