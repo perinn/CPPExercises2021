@@ -22,7 +22,7 @@ struct Edge {
     {}
 };
 
-void run() {
+[[noreturn]] void run() {
     // https://codeforces.com/problemset/problem/20/C?locale=ru
     // Не требуется сделать оптимально быструю версию, поэтому если вы получили:
     //
@@ -58,21 +58,45 @@ void run() {
     const int INF = std::numeric_limits<int>::max();
 
     std::vector<int> distances(nvertices, INF);
-    // TODO ...
+    distances[start] = 0;
 
-//    while (true) {
-//
-//    }
+    std::vector<bool> prg (nvertices, false);
+    std::vector<int> back_step (nvertices, -1);
+//    bool aboba = true;
+    while (true) {
 
-//    if (...) {
-//        ...
-//        for (...) {
-//            std::cout << (path[i] + 1) << " ";
-//        }
-//        std::cout << std::endl;
-//    } else {
-//        std::cout << -1 << std::endl;
-//    }
+                int a = -1;
+                int b = INF;
+                for(int x = start; x <= finish; x++){
+                    if(distances[x]<b && !prg[x]){
+                        a = x;
+                        b = distances[x];
+                    }
+                }
+                if(b == INF){break;}
+
+                for(int j = 0; j < edges_by_vertex[a].size(); j++){
+                    if(distances[edges_by_vertex[a][j].v] > distances[a]+edges_by_vertex[a][j].w){
+                        distances[edges_by_vertex[a][j].v] = distances[a]+edges_by_vertex[a][j].w;
+                        back_step[edges_by_vertex[a][j].v] = a;
+                    }
+                }
+                prg[a] = true;
+    }
+//    std::cout << "aye" << std::endl;
+    if (distances[finish]!=INF) {
+        int back_step0 = finish;
+        std::vector<int> ans;
+        while(back_step0 != -1){
+            ans.push_back(back_step0+1);
+            back_step0 = back_step[back_step0];
+        }
+        for(int i = ans.size()-1; i >=0; i--){
+            std::cout << ans[i] << " ";
+        }
+    } else {
+        std::cout << -1 << std::endl;
+    }
 }
 
 int main() {

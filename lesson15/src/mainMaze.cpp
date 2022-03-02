@@ -18,6 +18,8 @@ struct Edge {
     {}
 };
 
+const int INF = std::numeric_limits<int>::max();
+
 // Эта биективная функция по координате пикселя (строчка и столбик) + размерам картинки = выдает номер вершины
 int encodeVertex(int row, int column, int nrows, int ncolumns) {
     rassert(row < nrows, 348723894723980017);
@@ -30,8 +32,8 @@ int encodeVertex(int row, int column, int nrows, int ncolumns) {
 cv::Point2i decodeVertex(int vertexId, int nrows, int ncolumns) {
 
     // TODO: придумайте как найти номер строки и столбика пикселю по номеру вершины (просто поймите предыдущую функцию и эта функция не будет казаться сложной)
-    int row = -1;
-    int column = -1;
+    int row = vertexId/ncolumns;
+    int column = vertexId%ncolumns;
 
     // сверим что функция симметрично сработала:
     rassert(encodeVertex(row, column, nrows, ncolumns) == vertexId, 34782974923035);
@@ -47,7 +49,7 @@ void run(int mazeNumber) {
     rassert(maze.type() == CV_8UC3, 3447928472389020);
     std::cout << "Maze resolution: " << maze.cols << "x" << maze.rows << std::endl;
 
-    int nvertices = 0; // TODO
+    int nvertices = maze.rows*maze.cols; // TODO
 
     std::vector<std::vector<Edge>> edges_by_vertex(nvertices);
     for (int j = 0; j < maze.rows; ++j) {
@@ -56,6 +58,45 @@ void run(int mazeNumber) {
             unsigned char blue = color[0];
             unsigned char green = color[1];
             unsigned char red = color[2];
+
+            int u = encodeVertex(j,i,maze.rows, maze.cols);
+
+            if(j+1<maze.rows){
+                int v = encodeVertex(j+1,i,maze.rows, maze.cols);
+                cv::Vec3b color1 = maze.at<cv::Vec3b>(j+1, i);
+                unsigned char blue1 = color1[0];
+                unsigned char green1 = color1[1];
+                unsigned char red1 = color1[2];
+                int w = abs(blue-blue1)+abs(green-green1)+abs(red-red1);
+                edges_by_vertex[u].push_back(Edge(u,v, w));
+            }
+            if(j-1>=0){
+                int v = encodeVertex(j-1,i,maze.rows, maze.cols);
+                cv::Vec3b color1 = maze.at<cv::Vec3b>(j-1, i);
+                unsigned char blue1 = color1[0];
+                unsigned char green1 = color1[1];
+                unsigned char red1 = color1[2];
+                int w = abs(blue-blue1)+abs(green-green1)+abs(red-red1);
+                edges_by_vertex[u].push_back(Edge(u,v, w));
+            }
+            if(i+1<maze.cols){
+                int v = encodeVertex(j,i+1,maze.rows, maze.cols);
+                cv::Vec3b color1 = maze.at<cv::Vec3b>(j, i+1);
+                unsigned char blue1 = color1[0];
+                unsigned char green1 = color1[1];
+                unsigned char red1 = color1[2];
+                int w = abs(blue-blue1)+abs(green-green1)+abs(red-red1);
+                edges_by_vertex[u].push_back(Edge(u,v, w));
+            }
+            if(i-1>=0){
+                int v = encodeVertex(j,i-1,maze.rows, maze.cols);
+                cv::Vec3b color1 = maze.at<cv::Vec3b>(j, i-1);
+                unsigned char blue1 = color1[0];
+                unsigned char green1 = color1[1];
+                unsigned char red1 = color1[2];
+                int w = abs(blue-blue1)+abs(green-green1)+abs(red-red1);
+                edges_by_vertex[u].push_back(Edge(u,v, w));
+            }
 
             // TODO добавьте соотвтетсвующие этому пикселю ребра
         }
@@ -75,11 +116,62 @@ void run(int mazeNumber) {
         rassert(false, 324289347238920081);
     }
 
-    const int INF = std::numeric_limits<int>::max();
+
 
     cv::Mat window = maze.clone(); // на этой картинке будем визуализировать до куда сейчас дошла прокладка маршрута
 
     std::vector<int> distances(nvertices, INF);
+    distances[start] = 0;
+
+    std::vector<bool> prg (nvertices, false);
+    std::vector<int> back_step (nvertices, -1);
+
+    int progress = 0;
+    while (true) {
+
+        int a = -1;
+        int b = INF;
+        for(int x = 0; x <= nvertices-1; x++){
+            if(distances[x]<b && !prg[x]){
+                a = x;
+                b = distances[x];
+            }
+        }
+        if(b == INF || a==finish){break;}
+
+        for(int j = 0; j < edges_by_vertex[a].size(); j++){
+            if(distances[edges_by_vertex[a][j].v] > distances[a]+edges_by_vertex[a][j].w){
+                distances[edges_by_vertex[a][j].v] = distances[a]+edges_by_vertex[a][j].w;
+                back_step[edges_by_vertex[a][j].v] = a;
+            }
+        }
+        prg[a] = true;
+        progress++;
+        cv::Point2i p = decodeVertex(a, maze.rows, maze.cols);
+
+        window.at<cv::Vec3b>(p.y, p.x) = cv::Vec3b(0, 255, 0);
+        if(progress%100==0) {
+            cv::imshow("Maze", window);
+            cv::waitKey(1);
+//            std::cout << (float)100*progress/prg.size()<<"%" <<std::endl;
+        }
+
+    }
+
+    if (distances[finish]!=INF) {
+        std::cout << "aboba!" << std::endl;
+        int back_step0 = finish;
+        std::vector<int> ans;
+        while (back_step0 != -1) {
+            cv::Point2i p = decodeVertex(back_step0, maze.rows, maze.cols);
+            window.at<cv::Vec3b>(p.y, p.x) = cv::Vec3b(0, 0, 255);
+            back_step0 = back_step[back_step0];
+            cv::imshow("Maze", window);
+            cv::waitKey(1);
+        }
+        cv::imwrite("lesson15/data/mazesImages/maze" + std::to_string(mazeNumber) + "_res.png", window);
+    }
+
     // TODO СКОПИРУЙТЕ СЮДА ДЕЙКСТРУ ИЗ ПРЕДЫДУЩЕГО ИСХОДНИКА
 
     // TODO в момент когда вершина становится обработанной - красьте ее на картинке window в зеленый цвет и показывайте картинку:
@@ -103,7 +195,7 @@ void run(int mazeNumber) {
 
 int main() {
     try {
-        int mazeNumber = 1;
+        int mazeNumber = 3;
         run(mazeNumber);
 
         return 0;

@@ -21,7 +21,7 @@ void drawText(cv::Mat img, std::string text, double fontScale, int &yOffset) {
 }
 
 
-void run() {
+[[noreturn]] void run() {
     const bool useWebcam = true; // TODO попробуйте выставить в true, если у вас работает вебкамера - то и здорово! иначе - работайте хотя бы со статичными картинками
 
     bool drawOver = true; // рисовать ли поверх наложенную картинку (можно включить-включить чтобы мигнуть картинкой и проверить качество выравнивания)
