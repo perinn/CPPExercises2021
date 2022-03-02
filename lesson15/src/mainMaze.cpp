@@ -68,7 +68,7 @@ void run(int mazeNumber) {
                 unsigned char green1 = color1[1];
                 unsigned char red1 = color1[2];
                 int w = 1+abs(blue-blue1)+abs(green-green1)+abs(red-red1);
-                if(w==255*3){w=INF;}
+                if(w==1+255*3){w=INF;}
                 edges_by_vertex[u].push_back(Edge(u,v, w));
             }
             if(j-1>=0){
@@ -78,7 +78,7 @@ void run(int mazeNumber) {
                 unsigned char green1 = color1[1];
                 unsigned char red1 = color1[2];
                 int w = 1+abs(blue-blue1)+abs(green-green1)+abs(red-red1);
-                if(w==255*3){w=INF;}
+                if(w==1+255*3){w=INF;}
                 edges_by_vertex[u].push_back(Edge(u,v, w));
             }
             if(i+1<maze.cols){
@@ -88,7 +88,7 @@ void run(int mazeNumber) {
                 unsigned char green1 = color1[1];
                 unsigned char red1 = color1[2];
                 int w = 1+abs(blue-blue1)+abs(green-green1)+abs(red-red1);
-                if(w==255*3){w=INF;}
+                if(w==1+255*3){w=INF;}
                 edges_by_vertex[u].push_back(Edge(u,v, w));
             }
             if(i-1>=0){
@@ -173,7 +173,7 @@ void run(int mazeNumber) {
             cv::imshow("Maze", window);
             cv::waitKey(1);
         }
-        cv::imwrite("lesson15/data/mazesImages/maze" + std::to_string(mazeNumber) + "_res0.png", window);
+        cv::imwrite("lesson15/data/mazesImages/maze" + std::to_string(mazeNumber) + "_res00.png", window);
     }
 
     // TODO СКОПИРУЙТЕ СЮДА ДЕЙКСТРУ ИЗ ПРЕДЫДУЩЕГО ИСХОДНИКА
