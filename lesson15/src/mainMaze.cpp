@@ -2,6 +2,7 @@
 #include <sstream>
 #include <iostream>
 #include <stdexcept>
+#include <queue>
 
 #include <libutils/rasserts.h>
 
@@ -17,6 +18,7 @@ struct Edge {
     Edge(int u, int v, int w) : u(u), v(v), w(w)
     {}
 };
+
 
 const int INF = std::numeric_limits<int>::max();
 
@@ -68,8 +70,8 @@ void run(int mazeNumber) {
                 unsigned char green1 = color1[1];
                 unsigned char red1 = color1[2];
                 w+=abs(blue-blue1)+abs(green-green1)+abs(red-red1);
-                if(w>=42*3){w=INF;}
-                else{w=1;}
+//                if(w>=42*3){w=INF;}
+//                else{w=1;}
                 edges_by_vertex[u].push_back(Edge(u,v, w));
             }
             if(j-1>=0){
@@ -79,8 +81,8 @@ void run(int mazeNumber) {
                 unsigned char green1 = color1[1];
                 unsigned char red1 = color1[2];
                 w+=abs(blue-blue1)+abs(green-green1)+abs(red-red1);
-                if(w>=42*3){w=INF;}
-                else{w=1;}
+//                if(w>=42*3){w=INF;}
+//                else{w=1;}
                 edges_by_vertex[u].push_back(Edge(u,v, w));
             }
             if(i+1<maze.cols){
@@ -90,8 +92,8 @@ void run(int mazeNumber) {
                 unsigned char green1 = color1[1];
                 unsigned char red1 = color1[2];
                 w+=abs(blue-blue1)+abs(green-green1)+abs(red-red1);
-                if(w>=42*3){w=INF;}
-                else{w=1;}
+//                if(w>=42*3){w=INF;}
+//                else{w=1;}
                 edges_by_vertex[u].push_back(Edge(u,v, w));
             }
             if(i-1>=0){
@@ -101,8 +103,8 @@ void run(int mazeNumber) {
                 unsigned char green1 = color1[1];
                 unsigned char red1 = color1[2];
                 w+=abs(blue-blue1)+abs(green-green1)+abs(red-red1);
-                if(w>=42*3){w=INF;}
-                else{w=1;}
+//                if(w>=42*3){w=INF;}
+//                else{w=1;}
                 edges_by_vertex[u].push_back(Edge(u,v, w));
             }
 
@@ -128,6 +130,7 @@ void run(int mazeNumber) {
 
     cv::Mat window = maze.clone(); // на этой картинке будем визуализировать до куда сейчас дошла прокладка маршрута
 
+
     std::vector<int> distances(nvertices, INF);
     distances[start] = 0;
 
@@ -137,18 +140,27 @@ void run(int mazeNumber) {
     int progress = 0;
     while (true) {
 
-        int a = -1;
-        int b = INF;
-        for(int x = 0; x <= nvertices-1; x++){
-            if(distances[x]<b && !prg[x]){
-                a = x;
-                b = distances[x];
-            }
+//        int a = -1;
+//        int b = INF;
+//        for(int x = 0; x <= nvertices-1; x++){
+//            if(distances[x]<b && !prg[x]){
+//                a = x;
+//                b = distances[x];
+//            }
+//        }
+        std::priority_queue<int, std::vector<int>, std::greater<>>Q(distances.begin(), distances.end());
+        int a = 0;
+        int b = Q.top();
+//        auto it = find(distances.begin(), distances.end(), b);
+//        int a = std::distance(distances.begin(), it);
+        for(int i = 0; i <= nvertices-1; i++){
+            if(distances[i]==b){a = i;
+            break;}
         }
         if(b == INF || a==finish){break;}
 
         for(int j = 0; j < edges_by_vertex[a].size(); j++){
-            if(edges_by_vertex[a][j].w==INF){continue;}
+            if(edges_by_vertex[a][j].w>=200){continue;}
             if(distances[edges_by_vertex[a][j].v] > distances[a]+edges_by_vertex[a][j].w){
                 distances[edges_by_vertex[a][j].v] = distances[a]+edges_by_vertex[a][j].w;
                 back_step[edges_by_vertex[a][j].v] = a;
@@ -158,7 +170,7 @@ void run(int mazeNumber) {
         progress++;
         cv::Point2i p = decodeVertex(a, maze.rows, maze.cols);
 
-        window.at<cv::Vec3b>(p.y, p.x) = cv::Vec3b(0, 255, 0);
+        window.at<cv::Vec3b>(p.y, p.x) = cv::Vec3b(0, 200, 0);
         if(progress%100==0) {
             cv::imshow("Maze", window);
             cv::waitKey(1);
@@ -178,7 +190,7 @@ void run(int mazeNumber) {
             cv::imshow("Maze", window);
             cv::waitKey(1);
         }
-        cv::imwrite("lesson15/data/mazesImages/maze" + std::to_string(mazeNumber) + "_res00.png", window);
+        cv::imwrite("lesson15/data/mazesImages/maze" + std::to_string(mazeNumber) + "_res.png", window);
     }
 
     // TODO СКОПИРУЙТЕ СЮДА ДЕЙКСТРУ ИЗ ПРЕДЫДУЩЕГО ИСХОДНИКА
@@ -204,7 +216,7 @@ void run(int mazeNumber) {
 
 int main() {
     try {
-        int mazeNumber = 3;
+        int mazeNumber = 1;
         run(mazeNumber);
 
         return 0;

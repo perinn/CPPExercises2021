@@ -12,17 +12,13 @@
 #include <libutils/rasserts.h>
 
 bool isPixelEmpty(cv::Vec3b color) {
-    // TODO 1 реализуйте isPixelEmpty(color):
-    // - верните true если переданный цвет - полностью черный (такие пиксели мы считаем пустыми)
-    // - иначе верните false
-    rassert(false, "325235141242153: You should do TODO 1 - implement isPixelEmpty(color)!");
+//    rassert(false, "325235141242153: You should do TODO 1 - implement isPixelEmpty(color)!");
     if(color[0]==0&&color[1]==0&&color[2]==0){
         return true;
     }
     else{
         return false;
     }
-    return true;
 }
 
 void run(std::string caseName) {
@@ -138,6 +134,50 @@ void run(std::string caseName) {
     cv::Mat panoDiff(pano_rows, pano_cols, CV_8UC3, cv::Scalar(0, 0, 0));
     // TODO 2 вам надо заполнить panoDiff картинку так чтобы было четко ясно где pano0 картинка (объявлена выше) и pano1 картинка отличаются сильно, а где - слабо:
     // сравните в этих двух картинках пиксели по одинаковым координатам (т.е. мы сверяем картинки) и покрасьте соответствующий пиксель panoDiff по этой логике:
+    int maxDiff = 0;
+    for(int i = 0; i < pano_cols; i++){
+        for(int j = 0; j < pano_rows; j++){
+            if(isPixelEmpty(pano0.at<cv::Vec3b>(j, i))&&isPixelEmpty(pano1.at<cv::Vec3b>(j, i))){
+                panoDiff.at<cv::Vec3b>(j, i) = cv::Vec3b(0, 0, 0);
+            }
+            else{
+                if(isPixelEmpty(pano0.at<cv::Vec3b>(j, i))||isPixelEmpty(pano1.at<cv::Vec3b>(j, i))){
+                    panoDiff.at<cv::Vec3b>(j, i) = cv::Vec3b(255, 255, 255);
+                }
+                else{
+                    if(maxDiff<abs(pano0.at<cv::Vec3b>(j, i)[0]-pano1.at<cv::Vec3b>(j, i)[0])+abs(pano0.at<cv::Vec3b>(j, i)[1]-pano1.at<cv::Vec3b>(j, i)[1])+abs(pano0.at<cv::Vec3b>(j, i)[2]-pano1.at<cv::Vec3b>(j, i)[2])){
+                        maxDiff=abs(pano0.at<cv::Vec3b>(j, i)[0]-pano1.at<cv::Vec3b>(j, i)[0])+abs(pano0.at<cv::Vec3b>(j, i)[1]-pano1.at<cv::Vec3b>(j, i)[1])+abs(pano0.at<cv::Vec3b>(j, i)[2]-pano1.at<cv::Vec3b>(j, i)[2]);
+                    }
+                }
+            }
+        }
+    }
+    std::cout<<maxDiff<<std::endl;
+    for(int i = 0; i < pano_cols; i++){
+        for(int j = 0; j < pano_rows; j++){
+            if(isPixelEmpty(pano0.at<cv::Vec3b>(j, i))&&isPixelEmpty(pano1.at<cv::Vec3b>(j, i))){
+//                panoDiff.at<cv::Vec3b>(j, i) = cv::Vec3b(0, 0, 0);
+            }
+            else{
+                if(isPixelEmpty(pano0.at<cv::Vec3b>(j, i))||isPixelEmpty(pano1.at<cv::Vec3b>(j, i))){
+//                    panoDiff.at<cv::Vec3b>(j, i) = cv::Vec3b(255, 255, 255);
+                }
+                else{
+//                    if(maxDiff<abs(pano0.at<cv::Vec3b>(j, i)[0]-pano1.at<cv::Vec3b>(j, i)[0])+abs(pano0.at<cv::Vec3b>(j, i)[1]-pano1.at<cv::Vec3b>(j, i)[1])+abs(pano0.at<cv::Vec3b>(j, i)[2]-pano1.at<cv::Vec3b>(j, i)[2])){
+//                        maxDiff=abs(pano0.at<cv::Vec3b>(j, i)[0]-pano1.at<cv::Vec3b>(j, i)[0])+abs(pano0.at<cv::Vec3b>(j, i)[1]-pano1.at<cv::Vec3b>(j, i)[1])+abs(pano0.at<cv::Vec3b>(j, i)[2]-pano1.at<cv::Vec3b>(j, i)[2]);
+//                    }
+                    int Diff = abs(pano0.at<cv::Vec3b>(j, i)[0]-pano1.at<cv::Vec3b>(j, i)[0])+abs(pano0.at<cv::Vec3b>(j, i)[1]-pano1.at<cv::Vec3b>(j, i)[1])+abs(pano0.at<cv::Vec3b>(j, i)[2]-pano1.at<cv::Vec3b>(j, i)[2]);
+                    int color = 255*double(Diff)/double(maxDiff);
+
+//                    std::cout<<double(Diff)/double(maxDiff)<<std::endl;
+//                    std::cout<<color<<std::endl;
+                    panoDiff.at<cv::Vec3b>(j, i) = cv::Vec3b(color, color, color);
+                }
+            }
+        }
+    }
+
+
     // - если оба пикселя пустые - проверяйте это через isPixelEmpty(color) (т.е. цвета черные) - результат тоже пусть черный
     // - если ровно один их пикселей пустой - результат пусть идеально белый
     // - иначе пусть результатом будет оттенок серого - пусть он тем светлее, чем больше разница между цветами пикселей
@@ -151,9 +191,9 @@ void run(std::string caseName) {
 
 int main() {
     try {
-        run("1_hanging"); // TODO 3 проанализируйте результаты по фотографиям с дрона - где различие сильное, где малое? почему так?
-        run("2_hiking"); // TODO 4 проанализируйте результаты по фотографиям с дрона - где различие сильное, где малое? почему так?
-        run("3_aero"); // TODO 5 проанализируйте результаты по фотографиям с дрона - где различие сильное, где малое? почему так?
+//        run("1_hanging"); // TODO 3 проанализируйте результаты по фотографиям с дрона - где различие сильное, где малое? почему так?
+//        run("2_hiking"); // TODO 4 проанализируйте результаты по фотографиям с дрона - где различие сильное, где малое? почему так?
+//        run("3_aero"); // TODO 5 проанализируйте результаты по фотографиям с дрона - где различие сильное, где малое? почему так?
         run("4_your_data"); // TODO 6 сфотографируйте что-нибудь сами при этом на второй картинке что-то изменив, проведите анализ
         // TODO 7 проведите анализ результатов на базе Вопросов-Упражнений предложенных в последней статье "Урок 19: панорама и визуализация качества склейки"
 
