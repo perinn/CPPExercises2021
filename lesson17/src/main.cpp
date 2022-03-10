@@ -370,10 +370,10 @@ void run(std::string caseName){
 
 int main() {
     try {
-        run("1_hanging");
-        run("2_hiking");
-        run("3_aero");
-//        run("4_your_data"); // TODO сфотографируйте что-нибудь сами при этом на второй картинке что-то изменив, см. иллюстрацию на сайте
+//        run("1_hanging");
+//        run("2_hiking");
+//        run("3_aero");
+        run("4_your_data"); // TODO сфотографируйте что-нибудь сами при этом на второй картинке что-то изменив, см. иллюстрацию на сайте
 
         return 0;
     } catch (const std::exception &e) {
