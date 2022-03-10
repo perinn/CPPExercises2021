@@ -140,23 +140,15 @@ void run(int mazeNumber) {
     int progress = 0;
     while (true) {
 
-//        int a = -1;
-//        int b = INF;
-//        for(int x = 0; x <= nvertices-1; x++){
-//            if(distances[x]<b && !prg[x]){
-//                a = x;
-//                b = distances[x];
-//            }
-//        }
-        std::priority_queue<int, std::vector<int>, std::greater<>>Q(distances.begin(), distances.end());
-        int a = 0;
-        int b = Q.top();
-//        auto it = find(distances.begin(), distances.end(), b);
-//        int a = std::distance(distances.begin(), it);
-        for(int i = 0; i <= nvertices-1; i++){
-            if(distances[i]==b){a = i;
-            break;}
+        int a = -1;
+        int b = INF;
+        for(int x = 0; x <= nvertices-1; x++){
+            if(distances[x]<b && !prg[x]){
+                a = x;
+                b = distances[x];
+            }
         }
+
         if(b == INF || a==finish){break;}
 
         for(int j = 0; j < edges_by_vertex[a].size(); j++){
