@@ -19,9 +19,9 @@ bool isPixelMasked(cv::Mat mask, int j, int i) {
     rassert(j >= 0 && j < mask.rows, 372489347280017);
     rassert(i >= 0 && i < mask.cols, 372489347280018);
     rassert(mask.type() == CV_8UC3, 2348732984792380019);
-
-    // TODO проверьте белый ли пиксель
-    return false;
+    if(mask.at<cv::Vec3b>(j,i)!=cv::Vec3b(0,0,0)){
+        return true;
+    }else{return false;}
 }
 
 void run(int caseNumber, std::string caseName) {
@@ -33,8 +33,9 @@ void run(int caseNumber, std::string caseName) {
     rassert(!mask.empty(), 378957298420019);
 
     // TODO напишите rassert сверяющий разрешение картинки и маски
+    rassert(original.cols==mask.cols&&original.rows==mask.rows, 85648756487564875);
     // TODO выведите в консоль это разрешение картинки
-    // std::cout << "Image resolution: " << ... << std::endl;
+     std::cout << "Image resolution: " << original.cols << "x" << original.rows << std::endl;
 
     // создаем папку в которую будем сохранять результаты - lesson18/resultsData/ИМЯ_НАБОРА/
     std::string resultsDir = "lesson18/resultsData/";
@@ -51,16 +52,48 @@ void run(int caseNumber, std::string caseName) {
     cv::imwrite(resultsDir + "1mask.png", mask);
 
     // TODO замените белым цветом все пиксели в оригинальной картинке которые покрыты маской
+    int n = 0;
+    cv::Mat original_cleaned = original.clone();
+    for(int i = 0 ; i < original_cleaned.cols; i++){
+        for(int j = 0; j < original_cleaned.rows; j++){
+            if(isPixelMasked(mask, j, i)){
+                original_cleaned.at<cv::Vec3b>(j,i)=cv::Vec3b (255,255,255);
+                n++;
+            }
+        }
+    }
     // TODO сохраните в папку с результатами то что получилось под названием "2_original_cleaned.png"
+    cv::imwrite(resultsDir + "2_original_cleaned.png", original_cleaned);
     // TODO посчитайте и выведите число отмаскированных пикселей (числом и в процентах) - в таком формате:
-    // Number of masked pixels: 7899/544850 = 1%
+    std::cout << "Number of masked pixels: " <<  n << "/" << mask.cols*mask.rows <<" = "<< 100*(float)n/((float)mask.cols*(float)mask.rows) << "%" << std::endl;
 
     FastRandom random(32542341); // этот объект поможет вам генерировать случайные гипотезы
 
     // TODO 10 создайте картинку хранящую относительные смещения - откуда брать донора для заплатки, см. подсказки про то как с нею работать на сайте
-    // TODO 11 во всех отмаскированных пикселях: заполните эту картинку с относительными смещениями - случайными смещениями (но чтобы они и их окрестность 5х5 не выходила за пределы картинки)
-    // TODO 12 во всех отмаскированных пикселях: замените цвет пиксела А на цвет пикселя Б на который указывает относительное смещение пикселя А
-    // TODO 13 сохраните получившуюся картинку на диск
+    cv::Mat shifts = cv::Mat(mask.rows, mask.cols,CV_32SC2, cv::Scalar(0, 0));
+    for(int times = 1; times <=1000; times++){
+        // TODO 11 во всех отмаскированных пикселях: заполните эту картинку с относительными смещениями - случайными смещениями (но чтобы они и их окрестность 5х5 не выходила за пределы картинки)
+        for(int i = 0 ; i < shifts.cols; i++){
+            for(int j = 0 ; j < shifts.rows; j++){
+                if(isPixelMasked(mask, j, i)){
+                    shifts.at<cv::Vec2i>(j, i) = cv::Vec2i (random.next(5, shifts.rows-5), random.next(5, shifts.cols-5));
+                }
+            }
+        }
+        // TODO 12 во всех отмаскированных пикселях: замените цвет пиксела А на цвет пикселя Б на который указывает относительное смещение пикселя А
+        cv::Mat res = original_cleaned.clone();
+        for(int i = 0 ; i < res.cols; i++){
+            for(int j = 0 ; j < res.rows; j++){
+                if(isPixelMasked(mask, j, i)){
+                    res.at<cv::Vec3b>(j,i) = original_cleaned.at<cv::Vec3b>(shifts.at<cv::Vec2i>(j,i)[0], shifts.at<cv::Vec2i>(j,i)[1]);
+                }
+            }
+        }
+        // TODO 13 сохраните получившуюся картинку на диск
+        if(times % 100==0){
+            cv::imwrite(resultsDir + "3_result" + "_" + std::to_string(times)+".png", res);
+        }
+    }
     // TODO 14 выполняйте эти шаги 11-13 много раз, например 1000 раз (оберните просто в цикл, сохраняйте картинку на диск только на каждой десятой или сотой итерации)
     // TODO 15 теперь давайте заменять значение относительного смещения на новой только если новая случайная гипотеза - лучше старой, добавьте оценку "насколько смещенный патч 5х5 похож на патч вокруг пикселя если их наложить"
     //
