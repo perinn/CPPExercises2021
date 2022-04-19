@@ -23,6 +23,18 @@ bool isPixelMasked(cv::Mat mask, int j, int i) {
         return true;
     }else{return false;}
 }
+int estimateQuality(cv::Mat image, int j, int i, int ny, int nx, int a, int b){
+    int res = 0;
+    for(int dx = - b/2; dx <= b/2; dx++){
+        for(int dy = -a/2; dy <= a/2; dy++){
+            int d0 = (image.at<cv::Vec3b>(j+dy,i+dx)[0]-image.at<cv::Vec3b>(ny+dy,nx+dx)[0]);
+            int d1 = (image.at<cv::Vec3b>(j+dy,i+dx)[1]-image.at<cv::Vec3b>(ny+dy,nx+dx)[1]);
+            int d2 = (image.at<cv::Vec3b>(j+dy,i+dx)[2]-image.at<cv::Vec3b>(ny+dy,nx+dx)[2]);
+            res += d0*d0+d1*d1+d2*d2;
+        }
+    }
+    return res;
+}
 
 void run(int caseNumber, std::string caseName) {
     std::cout << "_________Case #" << caseNumber << ": " <<  caseName << "_________" << std::endl;
@@ -73,15 +85,31 @@ void run(int caseNumber, std::string caseName) {
     cv::Mat shifts = cv::Mat(mask.rows, mask.cols,CV_32SC2, cv::Scalar(0, 0));
     for(int times = 1; times <=1000; times++){
         // TODO 11 во всех отмаскированных пикселях: заполните эту картинку с относительными смещениями - случайными смещениями (но чтобы они и их окрестность 5х5 не выходила за пределы картинки)
+        cv::Mat res = original_cleaned.clone();
+
         for(int i = 0 ; i < shifts.cols; i++){
             for(int j = 0 ; j < shifts.rows; j++){
                 if(isPixelMasked(mask, j, i)){
-                    shifts.at<cv::Vec2i>(j, i) = cv::Vec2i (random.next(5, shifts.rows-5), random.next(5, shifts.cols-5));
+//                    shifts.at<cv::Vec2i>(j, i) = cv::Vec2i (random.next(5, shifts.rows-5), random.next(5, shifts.cols-5));
+                    cv::Vec2i dxy = shifts.at<cv::Vec2i>(j,i);
+                    int nx = i+dxy[1];
+                    int ny = j+dxy[0];
+                    int currentQuality = estimateQuality(res, j, i, ny, nx, 5, 5);
+
+                    int rx = random.next(5, res.cols-5);
+                    int ry = random.next(5, res.rows-5);
+                    int randomQuality = estimateQuality(res, j, i, j+ry, i+rx, 5, 5);
+
+                    if(randomQuality<currentQuality){
+                        shifts.at<cv::Vec2i>(j,i) = cv::Vec2i()
+                    }
                 }
             }
         }
+
+
         // TODO 12 во всех отмаскированных пикселях: замените цвет пиксела А на цвет пикселя Б на который указывает относительное смещение пикселя А
-        cv::Mat res = original_cleaned.clone();
+
         for(int i = 0 ; i < res.cols; i++){
             for(int j = 0 ; j < res.rows; j++){
                 if(isPixelMasked(mask, j, i)){
@@ -90,8 +118,9 @@ void run(int caseNumber, std::string caseName) {
             }
         }
         // TODO 13 сохраните получившуюся картинку на диск
-        if(times % 100==0){
+        if(times % 10==0){
             cv::imwrite(resultsDir + "3_result" + "_" + std::to_string(times)+".png", res);
+            std::cout << "progress: " << times/10<< "%" << std::endl;
         }
     }
     // TODO 14 выполняйте эти шаги 11-13 много раз, например 1000 раз (оберните просто в цикл, сохраняйте картинку на диск только на каждой десятой или сотой итерации)
