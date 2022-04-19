@@ -23,14 +23,17 @@ bool isPixelMasked(cv::Mat mask, int j, int i) {
         return true;
     }else{return false;}
 }
-int estimateQuality(cv::Mat image, int j, int i, int ny, int nx, int a, int b){
+int estimateQuality(cv::Mat image,cv::Mat mask, int j, int i, int ny, int nx, int a, int b){
     int res = 0;
     for(int dx = - b/2; dx <= b/2; dx++){
         for(int dy = -a/2; dy <= a/2; dy++){
-            int d0 = (image.at<cv::Vec3b>(j+dy,i+dx)[0]-image.at<cv::Vec3b>(ny+dy,nx+dx)[0]);
-            int d1 = (image.at<cv::Vec3b>(j+dy,i+dx)[1]-image.at<cv::Vec3b>(ny+dy,nx+dx)[1]);
-            int d2 = (image.at<cv::Vec3b>(j+dy,i+dx)[2]-image.at<cv::Vec3b>(ny+dy,nx+dx)[2]);
-            res += d0*d0+d1*d1+d2*d2;
+            if(isPixelMasked(mask,j,i)){
+                int d0 = (image.at<cv::Vec3b>(j + dy, i + dx)[0] - image.at<cv::Vec3b>(ny + dy, nx + dx)[0]);
+                int d1 = (image.at<cv::Vec3b>(j + dy, i + dx)[1] - image.at<cv::Vec3b>(ny + dy, nx + dx)[1]);
+                int d2 = (image.at<cv::Vec3b>(j + dy, i + dx)[2] - image.at<cv::Vec3b>(ny + dy, nx + dx)[2]);
+                res += d0 * d0 + d1 * d1 + d2 * d2;
+            }
+            else{res+=1000;}
         }
     }
     return res;
@@ -47,7 +50,7 @@ void run(int caseNumber, std::string caseName) {
     // TODO напишите rassert сверяющий разрешение картинки и маски
     rassert(original.cols==mask.cols&&original.rows==mask.rows, 85648756487564875);
     // TODO выведите в консоль это разрешение картинки
-     std::cout << "Image resolution: " << original.cols << "x" << original.rows << std::endl;
+    std::cout << "Image resolution: " << original.cols << "x" << original.rows << std::endl;
 
     // создаем папку в которую будем сохранять результаты - lesson18/resultsData/ИМЯ_НАБОРА/
     std::string resultsDir = "lesson18/resultsData/";
@@ -94,14 +97,14 @@ void run(int caseNumber, std::string caseName) {
                     cv::Vec2i dxy = shifts.at<cv::Vec2i>(j,i);
                     int nx = i+dxy[1];
                     int ny = j+dxy[0];
-                    int currentQuality = estimateQuality(res, j, i, ny, nx, 5, 5);
+                    int currentQuality = estimateQuality(res, mask, j, i, ny, nx, 5, 5);
 
-                    int rx = random.next(5, res.cols-5);
-                    int ry = random.next(5, res.rows-5);
-                    int randomQuality = estimateQuality(res, j, i, j+ry, i+rx, 5, 5);
+                    int rx = random.next(5, res.cols-5)-i;
+                    int ry = random.next(5, res.rows-5)-j;
+                    int randomQuality = estimateQuality(res, mask, j, i, j+ry, i+rx, 5, 5);
 
                     if(randomQuality<currentQuality){
-                        shifts.at<cv::Vec2i>(j,i) = cv::Vec2i()
+                        shifts.at<cv::Vec2i>(j,i) = cv::Vec2i(j+ry,i+rx );
                     }
                 }
             }
@@ -118,7 +121,7 @@ void run(int caseNumber, std::string caseName) {
             }
         }
         // TODO 13 сохраните получившуюся картинку на диск
-        if(times % 10==0){
+        if(times % 100==0){
             cv::imwrite(resultsDir + "3_result" + "_" + std::to_string(times)+".png", res);
             std::cout << "progress: " << times/10<< "%" << std::endl;
         }
