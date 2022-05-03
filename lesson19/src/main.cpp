@@ -247,6 +247,7 @@ void test3Top2ElementSearch() {
     rassert(max1 == max1Expected && max2 == max2Expected,
             "Wrong! Expected: " + std::to_string(max1Expected) + " and " + std::to_string(max2Expected)
             + ", but " + std::to_string(max1) + " and " + std::to_string(max2) + " found!");
+    std::cout << "Two biggest different values: " << max1Expected << " and " << max2Expected << std::endl;
     std::cout << "  OpenMP+reduction version: " << t.elapsed() << " s" << std::endl;
 
     std::cout << "______________________________________________" << std::endl;
@@ -256,6 +257,56 @@ void test3Top2ElementSearch() {
 // Эксперимент 4: придумайте код который позволит вам экспериментально выяснить как распределяются индексы цикла по потокам
 void test4HowWorkloadIsBalanced() {
     // TODO придумайте код который позволит вам экспериментально выяснить как распределяются индексы цикла по потокам
+    std::vector<std::vector<double>> av_ind_table;
+
+    int n = 100*1000*1000;
+    // TODO сделайте эту версию параллельной (с помощью САМОПИСНОЙ редукции)
+    int threadsN = 0;
+    #pragma omp parallel // ЗДЕСЬ НЕТ for, но есть parallel = говорим что эту секцию хочется запустить для каждого потока процессора
+    {
+        int threadId = -1;
+        #pragma omp critical // в критической секции рассчитаемся по номерам потоков и выведем в консоль что такой-то поток был запущен
+        {
+            threadId = threadsN;
+//            std::cout << "Thread #" << threadId << " started..." << std::endl;
+            ++threadsN;
+        }
+        long long threadSum = 0;
+        double threadCount = 0;
+        #pragma omp for // ЗДЕСЬ НЕТ parallel, т.к. это ключевое слово говорит "запускай потоки", но потоки уже запущены,
+        for (int i = 0; i < n; ++i) { // осталось лишь распределить среди них вычислительную рабочую нагрузку
+            threadSum += i;
+            threadCount+=1;// почему здесь не нужна критическая секция?
+        }
+        #pragma omp critical
+        {
+            double thread_average_index = ceil(((threadSum/threadCount)/n) * 1000.0) / 1000.0;
+//            std::cout << "Thread #" << threadId << " finished!" << std::endl;
+            std::vector<double> xs;
+            xs.push_back(threadId);
+            xs.push_back(thread_average_index);
+            av_ind_table.push_back(xs);
+        }
+    }
+    int j = 0;
+    bool a = true;
+    while(a){
+        a = false;
+        for (std::vector<double> i : av_ind_table){
+            if(i[0]==j){
+                a = true;
+                std::cout << "Thread #" << i[0] << " average index (0-1): " << i[1] <<std::endl;
+                j++;
+            }
+        }
+
+    }
+//    for(std::vector<double> i : av_ind_table){
+//        for(double j : i){
+//            std::cout << "Thread #"<< j <<" ";
+//        }
+//        std::cout<<std::endl;
+//    }
 }
 
 int main() {
@@ -268,8 +319,8 @@ int main() {
 
 //        test1PerElementProcessing();
 //        test2TotalSum();
-        test3Top2ElementSearch();
-//        test4HowWorkloadIsBalanced();
+//        test3Top2ElementSearch();
+        test4HowWorkloadIsBalanced();
 
         return 0;
     } catch (const std::exception &e) {
